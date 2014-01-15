@@ -62,14 +62,12 @@ namespace z80assemble
             }
         }
 
-        void parse()
+        void parse(string code)
         {
             // Do stuff
 
             assembler.reset();
             textBox2.Clear();
-
-            string code = fastColoredTextBox1.Text;
 
             char[] delim = new char[] { '\n' };
 
@@ -178,9 +176,14 @@ namespace z80assemble
 
         private void button1_Click(object sender, EventArgs e)
         {
+            
             assembler.reset();
-            parse();
+            assembler.parse(this.fastColoredTextBox1.Text);
             assembler.link();
+
+            //assembler.reset();
+            //parse();
+           
 
             mb.clear();
 

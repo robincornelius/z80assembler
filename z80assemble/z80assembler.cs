@@ -65,6 +65,10 @@ namespace z80assemble
         Dictionary<int,string> linkrequiredat = new Dictionary<int,string>();
 
 
+        public delegate void MsgHandler(string msg);
+        public event MsgHandler Msg;
+
+
         public void loadcommands()
         {
 
@@ -878,5 +882,164 @@ namespace z80assemble
 
 
         }
+
+        public void pass1(string[] lines)
+        {
+            foreach (string linex in lines)
+            {
+                string line = linex;
+
+                Match match2 = Regex.Match(line, @"^[ \t]+\.([A-Za-z0-9]+)[ \t]+([A-Za-z0-9]*)[ \t\r]*");
+                if (match2.Success)
+                {
+                    //textBox2.AppendText("Found Preprocessor " + match2.Groups[1].Value + " => " + match2.Groups[2].Value + "\r\n");
+                    string directive = match2.Groups[1].Value;
+                    string value = match2.Groups[2].Value;
+
+                    if (directive.ToUpper() == "EXTERN")
+                    {
+                        pushextern(value);
+                    }
+
+                }
+
+                // Labels
+                Match match = Regex.Match(line, @"^([A-Za-z0-9]+):(.*)");
+                if (match.Success)
+                {
+                    string key = match.Groups[1].Value;
+                    string rest = match.Groups[2].Value;
+                    //textBox2.AppendText("Found lable " + key + "\r\n");
+                    pushlabel(key);
+                    line = rest;
+                }
+
+            }
+        }
+
+        public void parse(string code)
+        {
+            // Do stuff
+
+            reset();
+           // textBox2.Clear();
+
+            char[] delim = new char[] { '\n' };
+
+
+            string[] lines = code.Split(delim);
+
+            int lineno = 0;
+
+            pass1(lines);
+
+            foreach (string linex in lines)
+            {
+                string line = linex;
+
+                lineno++;
+                //Look at character at start of line and decide action
+
+                //comment line or null line
+                if (line.Length == 0)
+                {
+                    //textBox2.AppendText("\r\n");
+                    continue;
+                }
+
+                if (line[0] == ';')
+                {
+                    //textBox2.AppendText("**** \r\n");
+                    continue;
+                }
+
+                if (line[0] == '\r' || line[0] == '\n')
+                {
+                    //textBox2.AppendText("\r\n");
+                    continue;
+                }
+
+                Match match5 = Regex.Match(line, @"^[ \t]+;.*");
+                if (match5.Success)
+                {
+                    //textBox2.AppendText("\r\n");
+                    continue;
+                }
+
+
+                // Labels
+                Match match = Regex.Match(line, @"^([A-Za-z0-9]+):(.*)");
+                if (match.Success)
+                {
+                    string key = match.Groups[1].Value;
+                    string rest = match.Groups[2].Value;
+                   // textBox2.AppendText("Found lable " + key + "\r\n");
+                    fixlabel(key);
+                    line = rest;
+                }
+
+                Match match3 = Regex.Match(line, @"^[ \t]+([A-Za-z0-9]+)[ \t]*(.*)(;*.*)");
+                if (match3.Success)
+                {
+                    string arg1 = null;
+                    string arg2 = null;
+                    string command = match3.Groups[1].Value;
+                   // textBox2.AppendText("Found command " + command + " -- > ");
+                    // Now break down that command into 0,1 or 2 paramater
+
+                    if (match3.Groups[2].Value != "")
+                    {
+                        string p = match3.Groups[2].Value;
+
+                        Match match4a = Regex.Match(p, @"^[ \t]*([()a-zA-Z0-9+]+)[ \t\r]*$");
+                        if (match4a.Success)
+                        {
+                            //textBox2.AppendText(" arguments \"" + match4a.Groups[1].Value + "\"");
+                            arg1 = match4a.Groups[1].Value;
+                        }
+                        else
+                        {
+                            Match match4 = Regex.Match(p, @"[ \t]*([()a-zA-Z0-9+]+)[ \t]*[, ]*[ \t]*([()a-zA-Z0-9+']+)[ \t\r]*");
+                            if (match4.Success)
+                            {
+                               // textBox2.AppendText(" arguments \"" + match4.Groups[1].Value + "\" -- \"" + match4.Groups[2].Value + "\"");
+                                arg1 = match4.Groups[1].Value;
+                                arg2 = match4.Groups[2].Value;
+                            }
+                        }
+                    }
+
+                    try
+                    {
+                        pushcommand(command, arg1, arg2);
+                    }
+                    catch (Exception ex)
+                    {
+                          
+                        sendmsg(ex.Message + "\nOn line " + lineno.ToString() + "\n" + line);
+                        break;
+                    }
+                    //textBox2.AppendText("\r\n");
+
+                }
+
+
+
+
+            }
+
+        }
+
+        void sendmsg(string msg)
+        {
+            if (Msg != null)
+            {
+                Msg(msg);
+            }
+
+        }
+
     }
+
+
 }
