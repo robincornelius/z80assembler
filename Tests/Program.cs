@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using z80assemble;
+using IntelHex;
 
 // Would love to do proper unit testing but i'm using express and non of the framework is present ;-(
 
@@ -13,11 +14,12 @@ namespace Tests
     {
         static void Main(string[] args)
         {
-            
+
+            //IntelHex.IntelHex ih = new IntelHex.IntelHex();
+            //ih.load("C:\\test.rom");
+            //ih.save("C:\\test2.rom");
 
             opcodetests();
-
-         
 
         }
 
