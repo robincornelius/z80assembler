@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual C# Express 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{50436C97-8E95-4985-BA7B-C413F3DD5FA2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C3B58DAA-A630-4A3B-B0A1-85479F1847BD} = {C3B58DAA-A630-4A3B-B0A1-85479F1847BD}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "z80assembler", "z80assemble\z80assembler.csproj", "{C3B58DAA-A630-4A3B-B0A1-85479F1847BD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{50436C97-8E95-4985-BA7B-C413F3DD5FA2}.Debug|x86.ActiveCfg = Debug|x86
+		{50436C97-8E95-4985-BA7B-C413F3DD5FA2}.Debug|x86.Build.0 = Debug|x86
+		{50436C97-8E95-4985-BA7B-C413F3DD5FA2}.Release|x86.ActiveCfg = Release|x86
+		{50436C97-8E95-4985-BA7B-C413F3DD5FA2}.Release|x86.Build.0 = Release|x86
+		{C3B58DAA-A630-4A3B-B0A1-85479F1847BD}.Debug|x86.ActiveCfg = Debug|x86
+		{C3B58DAA-A630-4A3B-B0A1-85479F1847BD}.Debug|x86.Build.0 = Debug|x86
+		{C3B58DAA-A630-4A3B-B0A1-85479F1847BD}.Release|x86.ActiveCfg = Release|x86
+		{C3B58DAA-A630-4A3B-B0A1-85479F1847BD}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,548 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="textBox2.Text" xml:space="preserve">
+    <value>;************************************************************************
+;*      DEVELOPMENT NUMBER: 31                                          *
+;*                                                                      *
+;*      MODULE NAME:SU200                                               *
+;*                                                                      *
+;*      MASTER ON 'MCSD VERSION 2.00'                                   *
+;*                                                                      *
+;*      ENTRY POINTS:PON                                                *
+;*                                                                      *
+;*      DESCRIPTION:STARTCPM IS THE STARTUP MODULE                      *
+;*      IT ALSO CONTAINS THE INTERRUPT VECTORS AND TABLES               *
+;*      THIS MODULE IS FOR VERSION 1.00 SERIES                          *
+;*      THIS MODULE NOW HANDLES THE RAMKEY OUTPUT TO ENABLE THE RAM     *
+;*      CHIP.                                                           *
+;*      ALTERATIONS:                                                    *
+;*      14-1-88 REVISION V2.11:ALTERED PIO PROGRAMMING SEQUENCE.512     *
+;*      FAULT INVESTIGATION                                             *
+;*      15-1-88 ADDED IINITHAN CALL                                     *
+;*      15-1-88 ADDED SOFTWARE VERSION DISPLAY AT SWITCH ON             *
+;*      20-1-88 ADDED TTL PORT INTERFACE TEST                           *
+;************************************************************************
+
+                .include         M80PARAMS.MAC
+                .include         CONST200.MAC
+                .include         MACROS.MAC
+                .extern     VERSION
+                .extern     CCURSYS
+                .extern     CFIXED
+                .extern     MLEDOFF
+                .extern     ADDHLA
+                .extern WAIT
+                .extern     VERBC
+                .extern     CURMDV
+                .extern     MDCOME
+                .extern     SQUEAK
+                .extern     IINITHAN
+                .extern     IBEEP
+                .extern     ISOFTCLK
+                .extern     IRS232
+                .extern     IPOWHAN
+                .extern     IKEYHAN
+                .extern     IDISHAN
+                .extern     ICURSYS
+                .extern     IANCHAN
+                .extern     CTC3VEC
+                .extern     CTC2VEC
+                .extern     CTC1VEC
+                .extern     CTC0VEC
+                .extern     RSOVEC
+                .extern     RSIVEC
+                .extern     PONTEST
+                .extern     TEST
+                .extern     DELAY
+                .extern     SYSFLA
+                .extern SYSFLC
+                .extern     POWCMD
+                .extern     KEYCMD
+                .extern     DISCMD
+                .extern     CURMD
+                .extern     NMI
+
+                .EXTERN NMIRUNNING
+
+
+                PAGE
+
+;************************************************************************
+;*                                                                      *
+;*              INTERRUPT VECTORS AND TABLES                            *
+;*                                                                      *
+;************************************************************************
+
+                .CODE
+
+
+
+
+;------------------------------------------------------------------------
+                ORG     0000H
+
+                ;THE FIRST THING TO DO IS ENABLE THE RAM CHIP.
+                LD      SP,ISTACK
+
+                ;BEFORE HE RAM CHIP CAN BE ENABLED, THE PIO MUST BE PROGRAMMED.
+                ;THE ORDER OF PROGRAMMING IS IMPORTANT IN CASE A RESET OCCURS
+                ;AFTER THE MODE3 MODE CONTROL WORD IS OUTPUT.TO SOLVE THIS
+                ;PROBLEM THE INTERRUPT VECTOR IS WRITTEN TWICE.
+
+                LD      HL,INTTAB       ;INTERRUPT VECTOR
+                LD      A,L
+                OUT     (CTRLPB),A
+                LD      A,11001111B     ;MODE 3
+                OUT     (CTRLPB),A
+                LD      A,00001000B     ;I/O PATTERN
+                OUT     (CTRLPB),A
+
+                ;RE-WRITE THE INTERRUPT VECTOR
+                LD      HL,INTTAB       ;INTERRUPT VECTOR
+                LD      A,L
+                OUT     (CTRLPB),A
+
+                LD      A,00000111B     ;INTERRUPTS OFF,NO MASK FOLLOWS
+                OUT     (CTRLPB),A
+                LD      A,00000000B     ;DATA OUTPUTS
+                OUT     (DATAPB),A
+
+                ;DELAY WHILE RAM IS ENABLED.
+                LD      C,0
+PONDLY:         LD      B,0
+PONDLY2:        DJNZ    PONDLY2
+                DEC     C
+                JR      NZ,PONDLY
+
+                ;JUMP TO THE MAIN INITIALISATION CODE.
+                JP      PON
+
+;------------------------------------------------------------------------
+                ;THE MASKABLE INTERRUPT VECTOR TABLE
+                ;MUST LIE ON EVEN BOUNDARY
+                ORG     0032H
+
+                .global  INTTAB
+
+INTTAB:        
+		.dw     RSIVEC          ;RS232 INPUT INTERRUPT
+                .dw     RSIVEC          ;RS232 OUTPUT INTERRUPT
+                .dw     RSIVEC
+                .dw     RSIVEC
+                .dw     RSOVEC
+                .dw     RSIVEC
+                .dw     RSIVEC
+                .dw     RSIVEC
+
+                .dw     CTC0VEC
+                .dw     CTC1VEC         ;CTC CHANNEL 1 VECTOR
+                .dw     CTC2VEC
+                .dw     CTC3VEC
+
+                ORG     0066H           ;NMI VECTOR
+                ;ONLY SERVICE AN NMI IF THE RAM IS ENABLED.
+TESTPAT         .equ     0AAH            ;RAM  TEST PATTERN.
+
+                PUSH    AF
+                LD      A,TESTPAT
+                LD      (RAMLOC),A      ;WRITE PATTERN.
+                LD      A,(RAMLOC)      ;READ BACK.
+                CP      TESTPAT         ;WRITTEN?
+                JP      NZ,0            ;NO, SO RESET PROCESSOR.
+                POP     AF
+
+                JP      NMI
+
+                ;RAM TEST LOCATION:
+                .DATA
+RAMLOC:         .ds     1
+                .CODE
+
+;************************************************************************
+;*                                                                      *
+;*              POWER ON ENTRY POINT                                    *
+;*                                                                      *
+;************************************************************************
+
+                .CODE
+
+                .global   PON
+
+                ;THE POWER ON MODULE CALLS ALL THE INITIALISATION
+                ;ENTRY POINTS AND DETERMINES WHETHER OR NOT A
+                ;COLD START SHOULD OCCUR OR WHETHER THE SELF TEST SHOULD
+                ;BE EXECUTED.
+                ;THIS MODULE MUST ALSO DELAY FOR AT LEAST 80MS TO
+                ;ALLOW THE ANCHAN VALUES TO BECOME VALID
+
+                ;THE STACK IS SET UP IN THIS MODULE.THE STACK VALUE
+                ;IS DEFINED IN CONSTANT.MAC
+
+                ;INITIALISATION ENTRY POINTS FOR THE MODULES IN
+                ;THE SYSTEM
+
+
+                .CODE
+
+                ;SET UP THE STACK
+
+PON:            ;SET UP THE INTERRUPT REGISTER
+                LD      HL,INTTAB
+                LD      A,H
+                LD      I,A
+
+                ;SET INTERRUPT MODE 2
+                IM      2
+
+                ;INITIALISE THE PIOS. PORTS A AND B ARE SET TO MODE 3
+                ;WITH NO INTERRUPTS
+
+                ;***PORT A CONFIGURATION***
+                ;FIRST TAKE THE PIO OUT OF ITS RESET STATE
+                ;SET ALL PORT A LINES AS INPUTS TEMPORARILY
+                LD      C,CTRLPA                ;PORT ADDRESS
+                LD      A,11111111B             ;ALL INPUTS
+                CALL    PORTIO
+
+                ;SPECIAL ACTION FOR DISCHARGE LINE
+                ;SET IT HIGH
+                LD      A,00010000B
+                OUT     (DATAPA),A              ;DISCHARGE HIGH
+
+                ;SET THE PORT AS ALL OUTPUTS
+                LD      C,CTRLPA                ;PORT A CONTROL
+                LD      A,00000000B             ;ALL OUTPUTS
+                CALL    PORTIO                  ;SAME AS PORT B
+
+                ;***PORT B CONFIGURATION***
+                ;PORT B ALREADY SET UP WHEN RAM CHIP ENABLED.
+
+                ;***PORT C CONFIGURATION***
+                LD      C,CTRLPC                ;EXTERNAL INTERFACE
+                LD      A,11011100B             ;I/O PATTERN
+                CALL    PORTIO
+
+                ;***PORT D CONFIGURATION***
+                ;SET UP DISPLAY/KEYPAD
+                LD      C,CTRLPD                ;PORT D CONTROL REG
+                LD      A,10001111B             ;IN/OUT PATTERN
+                CALL    PORTIO
+
+                ;NOW INITIALISE EVERYTHING
+
+                LD   A,0
+                LD (NMIRUNNING), A
+
+                CALL    ISOFTCLK        ;TIMING
+                CALL    IBEEP
+                CALL    IANCHAN
+                CALL    IPOWHAN
+
+                ;IMMEDIATELY TURN HARDWARE OFF
+                POWER   PCOFF
+
+                CALL    IRS232
+                CALL    ICURSYS         ;SYSTEM DATA SET UP
+                CALL    IDISHAN         ;DISPLAY HANDLER INIT
+                CALL    IKEYHAN         ;KEYPAD INIT
+                CALL    IINITHAN        ;PULSE HANDLER
+
+                ;DO THE POWER ON TEST.
+                CALL    PONTEST
+
+;************************************************************************
+;*              STARTUP ROUTINE                                         *
+;************************************************************************
+
+                ;ENABLE THE HARDWARE
+STARTWT:        POWER   PCON
+
+                ;BEEP
+                LD      HL,PONBEEP
+                CALL    SQUEAK
+
+;------------------------------------------------------------------------
+                ;SEE IF CURMD IS VALID, IF SO USE IT TO JUMP TO A MODE.
+                ;IF NOT, THEN RESET MEMORY AS IT IS SUSPECT THEN WAIT FOR
+                ;A KEY COMMAND FOR 2.5 SECONDS.IF NO KEY ARRIVES, START UP THE
+                ;CURRENT MODE.
+
+
+                ;SEE IF CURMD IS VALID.
+                LD      A,(CURMD)
+                LD      C,A
+                CALL    VERBC
+                LD      A,C
+                LD      HL,CURMDV       ;VERIFICATION BYTE
+                CP      (HL)            ;CURMD VALID?
+                JR      NZ,CLRMEM       ;NO, RESET RAM
+
+                ;CURMD IS OK SO TURN ON REQUIRED LED.
+PONWAIT:        ;DISPLAY POWER ON MESSAGE
+                CALL    MLEDOFF
+                LD      BC,PONMS
+                DISPLAY DCDBF           ;DISPLAY MESSAGE
+
+                LD      A,(CURMD)
+                SRA     A               ;BYTE OFFSET
+                LD      HL,LEDTAB
+                CALL    ADDHLA          ;HL HAS LED NUMBER
+                LD      D,(HL)
+                DISPLAY DCLON           ;TURN IT ON.
+
+                ;WAIT FOR 2.5 SECONDS.
+                LD      A,250
+                CALL    WAIT
+
+                ;IF KEY PRESSED THEN ATTEND TO IT, ELSE START
+                ;SYSTEM UP.
+                JR      NC,RUNSYS
+
+                ;KEY PRESSED, SO SEE WHAT IT WAS AND ACT ON IT.
+                CP      ENTKY
+                JP      Z,TEST          ;TEST MODE.
+
+                CP      CLRKY
+                JR      Z,CLRMEM        ;CLEAR MEMORY.
+
+                CP      NUM9
+                JR      Z,DISVER        ;DISPLAY VERSION NUMBER
+
+                JP      PONWAIT
+
+LEDTAB:         .db     8,11,9,10       ;MODE LEDS IN CORRECT ORDER.
+
+;------------------------------------------------------------------------
+                ;CLEAR MEMORY USING EACH RELEVANT MODULES 'C' ENTRY POINT.
+
+
+CLRMEM:         LD      BC,CLRMSG
+                DISPLAY DCDBF
+
+                CALL    CCURSYS         ;CURRENT MODE ETC.
+                CALL    CFIXED          ;PROG MEMORIES.
+
+                ;LEAVE MESSAGE UP FOR A BIT.
+                LD      A,100
+                CALL    WAIT
+                JP      PONWAIT
+
+CLRMSG:         .db     0CH,CHL,CHR,CHBLNK      ;'CLR '
+
+;------------------------------------------------------------------------
+                ;START THE MAGNET PROCESSING SOFTWARE UP.
+
+RUNSYS:         JP      MDCOME
+
+;------------------------------------------------------------------------
+                ;DEFINITION OF POWER-ON BEEP SEQUENCE
+
+PONBEEP:        .db     148
+                .db     10
+                .db     148
+                .db     10
+                .db     148
+                .db     25
+                .db     148
+                .db     10
+                .db     138
+                .db     0               ;END MARKER
+
+                ;POWER ON DISPLAY
+PONMS:          .db     5,0EH,CHL,CHBLNK                ;'SEL '
+
+;************************************************************************
+;*              DISPLAY SOFTWARE VERSION NUMBER                         *
+;************************************************************************
+
+
+DISVER:         LD      BC,VERSION
+                DISPLAY DCDEC
+
+                LD      A,100
+                CALL    WAIT
+
+                JP      PONWAIT
+
+;************************************************************************
+;*              SETS A PORT TO AN I/O PATTERN                           *
+;************************************************************************
+
+                ;ON ENTRY A HOLDS THE I/O PATTERN IN STANDARD ZILOG
+                ;FORMAT
+                ;(0-OUTPUT, 1-INPUT)
+                ;C REG HOLDS THE CONTROL REGISTER I/O ADDRESS
+                ;ON EXIT THE PIO PORT IS SET TO MODE 3,NO INTERRUPTS
+                ;AND THE REQUIRED DATA DIRECTIONS
+                ;THE INTERRUPT VECTOR IS OUTPUT FIRST SO THAT A RESET
+                ;AFTER THE MODE3 CONTROL WORD IS SENT CANNOT CAUSE PROBLEMS.
+                ;IF THIS HAPPENS, THE INTERRUPT VECTOR IS SET UP ON THE
+                ;SECOND WRITE.THIS IS FOR CHANGES THAT MAY USE INTERRUPTS LATER.
+
+
+PORTIO:         PUSH    AF              ;SAVE THE DATA DIRECTIONS
+
+                ;DUMMY INTERRUPT VECTOR
+                LD      HL,INTTAB
+                LD      A,L
+                OUT     (C),A
+
+                ;SET PORT TO MODE 3
+                LD      A,11001111B
+                OUT     (C),A
+
+                ;SET UP THE I/O PATTERN
+                POP     AF              ;DATA DIRECTIONS
+                OUT     (C),A
+
+                ;DUMMY INTERRUPT VECTOR
+                LD      HL,INTTAB
+                LD      A,L
+                OUT     (C),A
+
+                ;INTERRUPTS OFF AND NO INTERRUPT MASK FOLLOWS
+                LD      A,00000111B
+                OUT     (C),A
+
+                RET
+
+
+;************************************************************************
+
+                .end
+
+</value>
+  </data>
+  <data name="fastColoredTextBox1.Text" xml:space="preserve">
+    <value>                .CODE
+
+                .global   IKEYHAN
+                
+IKEYHAN:        LD      A,5
+                LD      (1234),A       ;UNGOT KEY DOESN'T EXIST
+                                       ;YET
+                AND     A,23H
+                OR      A, 5;
+
+                RET
+                
+                .end</value>
+  </data>
+</root>
