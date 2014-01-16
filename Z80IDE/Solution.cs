@@ -5,13 +5,17 @@ using System.Text;
 using System.IO;
 using z80assemble;
 using DockSample;
+using System.Xml.Serialization;
 
 namespace Z80IDE
 {
-
     public class file
     {
+        //needed for XML serialisztion
+        public file()
+        {
 
+        }
         public file(string name, string path)
         {
             this.name = name;
@@ -22,40 +26,72 @@ namespace Z80IDE
         public String path;
     }
 
+    public class solutiondetails
+    {
+        public string name;
+        public string basefolder;
+        public string filefolder;
+        [XmlArray(ElementName = "files", IsNullable = true)]
+        public List<file> files = new List<file>();
+    }
+
     public class Solution
     {
 
         public delegate void ChangedEventHandler(object sender, EventArgs e);
         public event ChangedEventHandler Changed;
+        //public List<file> files = new List<file>();
 
+        public solutiondetails details = new solutiondetails();
 
-        public List<file> files = new List<file>();
-        public string name;
-        public string basefolder;
+        public bool isDirty = false;
+        //public string name;
+        //public string basefolder;
 
-        private z80assembler assembler;
-
+ 
         public Solution()
         {
-            name = "Empty";
+            details.name = "Empty";
         }
 
-        public void addfile(string name,string path)
+        public void solutionchanged()
         {
-            file f = new file(name,path);
-          
-            files.Add(f);
-
             EventArgs e = new EventArgs();
             if (Changed != null)
                 Changed(this, e);
+        }
+
+        public bool addfile(string pathname)
+        {
+          
+         
+            string filename = Path.GetFileName(pathname);
+            string target = details.filefolder + Path.DirectorySeparatorChar + filename;
+            if(File.Exists(target))
+            {
+                return false;
+            }
+
+            File.Copy(pathname, target);
+
+            file f = new file(filename,"");
+          
+            details.files.Add(f);
+
+            solutionchanged();
+
+            isDirty = true;
+
+            return true;
 
         }
 
         public void removefile(string name)
         {
+            // We should offer chance to delete actual file on disk too
+
             file removef=null;
-            foreach(file f in files)
+            foreach (file f in details.files)
             {
                 if(f.name==name);
                 {
@@ -66,17 +102,17 @@ namespace Z80IDE
 
             if(removef!=null)
             {
-                files.Remove(removef);
-                EventArgs e = new EventArgs();
-                if (Changed != null)
-                    Changed(this, e);
+                details.files.Remove(removef);
+                solutionchanged();
             }
+
+            isDirty = true;
 
         }
 
         public bool isnameused(string name)
         {
-            foreach (file f in files)
+            foreach (file f in details.files)
             {
                 if (f.name == name)
                 {
@@ -88,7 +124,7 @@ namespace Z80IDE
 
         public string loadfile(string name)
         {
-            StreamReader sr = new StreamReader(this.basefolder+System.IO.Path.DirectorySeparatorChar+name);
+            StreamReader sr = new StreamReader(details.filefolder + System.IO.Path.DirectorySeparatorChar + name);
             string data = sr.ReadToEnd();
             sr.Close();
 
@@ -96,34 +132,49 @@ namespace Z80IDE
 
         }
 
-
-        IOutput outtarget;
-
-        public void build(IOutput outtarget)
+        public void Serialize()
         {
-            this.outtarget = outtarget;
+            Serialize(details.basefolder + System.IO.Path.DirectorySeparatorChar + details.name + ".sol");
+        }
 
-            assembler = new z80assembler();
+        public void Serialize(string filename)
+        {
+            Type[] extraTypes = new Type[1];
+            extraTypes[0] = typeof(List<file>);
 
-            assembler.Msg += new z80assembler.MsgHandler(assembler_Msg);
-
-            assembler.reset();
-
-            foreach (file f in files)
+            XmlSerializer serializer = new XmlSerializer(typeof(solutiondetails), extraTypes);
+            using ( TextWriter writer = new StreamWriter(filename))
             {
-                assembler_Msg("\r\n Staring file " + f.name + " .......\r\n");
-                assembler.reset();
-                assembler.parse(loadfile(f.name));
+                serializer.Serialize(writer, details);
+                writer.Close();
             }
 
-            assembler.link();
-
+            isDirty = false;
         }
 
-        void assembler_Msg(string msg)
+        public void Deserialize(string filename)
         {
-            outtarget.appendmsg(msg);
+            Type[] extraTypes = new Type[1];
+            extraTypes[0] = typeof(List<file>);
+
+            XmlSerializer serializer = new XmlSerializer(typeof(solutiondetails),extraTypes);
+      
+            FileStream fs = new FileStream(filename, FileMode.Open);
+            details = (solutiondetails)serializer.Deserialize(fs);
+            fs.Close();
+            isDirty = false;
+            solutionchanged();
+
+
         }
+
+        public void updatedetails(solutiondetails d)
+        {
+            details = d;
+            solutionchanged();
+
+        }
+       
 
     }
 }

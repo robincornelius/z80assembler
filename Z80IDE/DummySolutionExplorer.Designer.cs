@@ -28,132 +28,135 @@ namespace DockSample
 		private void InitializeComponent()
 		{
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.TreeNode treeNode1 = new System.Windows.Forms.TreeNode("Solution \'WinFormsUI\' (2 projects)");
-            System.Windows.Forms.TreeNode treeNode2 = new System.Windows.Forms.TreeNode("System", 6, 6);
-            System.Windows.Forms.TreeNode treeNode3 = new System.Windows.Forms.TreeNode("System.Data", 6, 6);
-            System.Windows.Forms.TreeNode treeNode4 = new System.Windows.Forms.TreeNode("System.Drawing", 6, 6);
-            System.Windows.Forms.TreeNode treeNode5 = new System.Windows.Forms.TreeNode("System.Windows.Forms", 6, 6);
-            System.Windows.Forms.TreeNode treeNode6 = new System.Windows.Forms.TreeNode("System.XML", 6, 6);
-            System.Windows.Forms.TreeNode treeNode7 = new System.Windows.Forms.TreeNode("WeifenLuo.WinFormsUI.Docking", 6, 6);
-            System.Windows.Forms.TreeNode treeNode8 = new System.Windows.Forms.TreeNode("References", 4, 4, new System.Windows.Forms.TreeNode[] {
-            treeNode2,
-            treeNode3,
-            treeNode4,
-            treeNode5,
-            treeNode6,
-            treeNode7});
-            System.Windows.Forms.TreeNode treeNode9 = new System.Windows.Forms.TreeNode("BlankIcon.ico", 5, 5);
-            System.Windows.Forms.TreeNode treeNode10 = new System.Windows.Forms.TreeNode("CSProject.ico", 5, 5);
-            System.Windows.Forms.TreeNode treeNode11 = new System.Windows.Forms.TreeNode("OutputWindow.ico", 5, 5);
-            System.Windows.Forms.TreeNode treeNode12 = new System.Windows.Forms.TreeNode("References.ico", 5, 5);
-            System.Windows.Forms.TreeNode treeNode13 = new System.Windows.Forms.TreeNode("SolutionExplorer.ico", 5, 5);
-            System.Windows.Forms.TreeNode treeNode14 = new System.Windows.Forms.TreeNode("TaskListWindow.ico", 5, 5);
-            System.Windows.Forms.TreeNode treeNode15 = new System.Windows.Forms.TreeNode("ToolboxWindow.ico", 5, 5);
-            System.Windows.Forms.TreeNode treeNode16 = new System.Windows.Forms.TreeNode("Images", 2, 1, new System.Windows.Forms.TreeNode[] {
-            treeNode9,
-            treeNode10,
-            treeNode11,
-            treeNode12,
-            treeNode13,
-            treeNode14,
-            treeNode15});
-            System.Windows.Forms.TreeNode treeNode17 = new System.Windows.Forms.TreeNode("AboutDialog.cs", 8, 8);
-            System.Windows.Forms.TreeNode treeNode18 = new System.Windows.Forms.TreeNode("App.ico", 5, 5);
-            System.Windows.Forms.TreeNode treeNode19 = new System.Windows.Forms.TreeNode("AssemblyInfo.cs", 7, 7);
-            System.Windows.Forms.TreeNode treeNode20 = new System.Windows.Forms.TreeNode("DummyOutputWindow.cs", 8, 8);
-            System.Windows.Forms.TreeNode treeNode21 = new System.Windows.Forms.TreeNode("DummyPropertyWindow.cs", 8, 8);
-            System.Windows.Forms.TreeNode treeNode22 = new System.Windows.Forms.TreeNode("DummySolutionExplorer.cs", 8, 8);
-            System.Windows.Forms.TreeNode treeNode23 = new System.Windows.Forms.TreeNode("DummyTaskList.cs", 8, 8);
-            System.Windows.Forms.TreeNode treeNode24 = new System.Windows.Forms.TreeNode("DummyToolbox.cs", 8, 8);
-            System.Windows.Forms.TreeNode treeNode25 = new System.Windows.Forms.TreeNode("MianForm.cs", 8, 8);
-            System.Windows.Forms.TreeNode treeNode26 = new System.Windows.Forms.TreeNode("Options.cs", 7, 7);
-            System.Windows.Forms.TreeNode treeNode27 = new System.Windows.Forms.TreeNode("OptionsDialog.cs", 8, 8);
-            System.Windows.Forms.TreeNode treeNode28 = new System.Windows.Forms.TreeNode("DockSample", 3, 3, new System.Windows.Forms.TreeNode[] {
-            treeNode8,
-            treeNode16,
-            treeNode17,
-            treeNode18,
-            treeNode19,
-            treeNode20,
-            treeNode21,
-            treeNode22,
-            treeNode23,
-            treeNode24,
-            treeNode25,
-            treeNode26,
-            treeNode27});
-            System.Windows.Forms.TreeNode treeNode29 = new System.Windows.Forms.TreeNode("System", 6, 6);
-            System.Windows.Forms.TreeNode treeNode30 = new System.Windows.Forms.TreeNode("System.Data", 6, 6);
-            System.Windows.Forms.TreeNode treeNode31 = new System.Windows.Forms.TreeNode("System.Design", 6, 6);
-            System.Windows.Forms.TreeNode treeNode32 = new System.Windows.Forms.TreeNode("System.Drawing", 6, 6);
-            System.Windows.Forms.TreeNode treeNode33 = new System.Windows.Forms.TreeNode("System.Windows.Forms", 6, 6);
-            System.Windows.Forms.TreeNode treeNode34 = new System.Windows.Forms.TreeNode("System.XML", 6, 6);
-            System.Windows.Forms.TreeNode treeNode35 = new System.Windows.Forms.TreeNode("References", 4, 4, new System.Windows.Forms.TreeNode[] {
-            treeNode29,
-            treeNode30,
-            treeNode31,
-            treeNode32,
-            treeNode33,
-            treeNode34});
-            System.Windows.Forms.TreeNode treeNode36 = new System.Windows.Forms.TreeNode("DockWindow.AutoHideNo.bmp", 9, 9);
-            System.Windows.Forms.TreeNode treeNode37 = new System.Windows.Forms.TreeNode("DockWindow.AutoHideYes.bmp", 9, 9);
-            System.Windows.Forms.TreeNode treeNode38 = new System.Windows.Forms.TreeNode("DockWindow.Close.bmp", 9, 9);
-            System.Windows.Forms.TreeNode treeNode39 = new System.Windows.Forms.TreeNode("DocumentWindow.Close.bmp", 9, 9);
-            System.Windows.Forms.TreeNode treeNode40 = new System.Windows.Forms.TreeNode("DocumentWindow.ScrollLeftDisabled.bmp", 9, 9);
-            System.Windows.Forms.TreeNode treeNode41 = new System.Windows.Forms.TreeNode("DocumentWindow.ScrollLeftEnabled.bmp", 9, 9);
-            System.Windows.Forms.TreeNode treeNode42 = new System.Windows.Forms.TreeNode("DocumentWindow.ScrollRightDisabled.bmp", 9, 9);
-            System.Windows.Forms.TreeNode treeNode43 = new System.Windows.Forms.TreeNode("DocumentWindow.ScrollRightEnabled.bmp", 9, 9);
-            System.Windows.Forms.TreeNode treeNode44 = new System.Windows.Forms.TreeNode("Resources", 2, 1, new System.Windows.Forms.TreeNode[] {
-            treeNode36,
-            treeNode37,
-            treeNode38,
-            treeNode39,
-            treeNode40,
-            treeNode41,
-            treeNode42,
-            treeNode43});
-            System.Windows.Forms.TreeNode treeNode45 = new System.Windows.Forms.TreeNode("Enums.cs", 7, 7);
-            System.Windows.Forms.TreeNode treeNode46 = new System.Windows.Forms.TreeNode("Gdi32.cs", 7, 3);
-            System.Windows.Forms.TreeNode treeNode47 = new System.Windows.Forms.TreeNode("Structs.cs", 7, 7);
-            System.Windows.Forms.TreeNode treeNode48 = new System.Windows.Forms.TreeNode("User32.cs", 7, 7);
-            System.Windows.Forms.TreeNode treeNode49 = new System.Windows.Forms.TreeNode("Win32", 2, 1, new System.Windows.Forms.TreeNode[] {
-            treeNode45,
-            treeNode46,
-            treeNode47,
-            treeNode48});
-            System.Windows.Forms.TreeNode treeNode50 = new System.Windows.Forms.TreeNode("AssemblyInfo.cs", 7, 7);
-            System.Windows.Forms.TreeNode treeNode51 = new System.Windows.Forms.TreeNode("Content.cs", 8, 8);
-            System.Windows.Forms.TreeNode treeNode52 = new System.Windows.Forms.TreeNode("CotentCollection.cs", 7, 7);
-            System.Windows.Forms.TreeNode treeNode53 = new System.Windows.Forms.TreeNode("CotentWindowCollection.cs", 7, 7);
-            System.Windows.Forms.TreeNode treeNode54 = new System.Windows.Forms.TreeNode("DockHelper.cs", 7, 7);
-            System.Windows.Forms.TreeNode treeNode55 = new System.Windows.Forms.TreeNode("DragHandler.cs", 7, 7);
-            System.Windows.Forms.TreeNode treeNode56 = new System.Windows.Forms.TreeNode("DragHandlerBase.cs", 7, 7);
-            System.Windows.Forms.TreeNode treeNode57 = new System.Windows.Forms.TreeNode("FloatWindow.cs", 8, 8);
-            System.Windows.Forms.TreeNode treeNode58 = new System.Windows.Forms.TreeNode("HiddenMdiChild.cs", 8, 8);
-            System.Windows.Forms.TreeNode treeNode59 = new System.Windows.Forms.TreeNode("InertButton.cs", 7, 7);
-            System.Windows.Forms.TreeNode treeNode60 = new System.Windows.Forms.TreeNode("Measures.cs", 7, 7);
-            System.Windows.Forms.TreeNode treeNode61 = new System.Windows.Forms.TreeNode("NormalTabStripWindow.cs", 8, 8);
-            System.Windows.Forms.TreeNode treeNode62 = new System.Windows.Forms.TreeNode("ResourceHelper.cs", 7, 7);
-            System.Windows.Forms.TreeNode treeNode63 = new System.Windows.Forms.TreeNode("WeifenLuo.WinFormsUI.Docking", 3, 3, new System.Windows.Forms.TreeNode[] {
-            treeNode35,
-            treeNode44,
-            treeNode49,
-            treeNode50,
-            treeNode51,
-            treeNode52,
-            treeNode53,
-            treeNode54,
-            treeNode55,
-            treeNode56,
-            treeNode57,
-            treeNode58,
-            treeNode59,
-            treeNode60,
-            treeNode61,
-            treeNode62});
+            System.Windows.Forms.TreeNode treeNode64 = new System.Windows.Forms.TreeNode("Solution \'WinFormsUI\' (2 projects)");
+            System.Windows.Forms.TreeNode treeNode65 = new System.Windows.Forms.TreeNode("System", 6, 6);
+            System.Windows.Forms.TreeNode treeNode66 = new System.Windows.Forms.TreeNode("System.Data", 6, 6);
+            System.Windows.Forms.TreeNode treeNode67 = new System.Windows.Forms.TreeNode("System.Drawing", 6, 6);
+            System.Windows.Forms.TreeNode treeNode68 = new System.Windows.Forms.TreeNode("System.Windows.Forms", 6, 6);
+            System.Windows.Forms.TreeNode treeNode69 = new System.Windows.Forms.TreeNode("System.XML", 6, 6);
+            System.Windows.Forms.TreeNode treeNode70 = new System.Windows.Forms.TreeNode("WeifenLuo.WinFormsUI.Docking", 6, 6);
+            System.Windows.Forms.TreeNode treeNode71 = new System.Windows.Forms.TreeNode("References", 4, 4, new System.Windows.Forms.TreeNode[] {
+            treeNode65,
+            treeNode66,
+            treeNode67,
+            treeNode68,
+            treeNode69,
+            treeNode70});
+            System.Windows.Forms.TreeNode treeNode72 = new System.Windows.Forms.TreeNode("BlankIcon.ico", 5, 5);
+            System.Windows.Forms.TreeNode treeNode73 = new System.Windows.Forms.TreeNode("CSProject.ico", 5, 5);
+            System.Windows.Forms.TreeNode treeNode74 = new System.Windows.Forms.TreeNode("OutputWindow.ico", 5, 5);
+            System.Windows.Forms.TreeNode treeNode75 = new System.Windows.Forms.TreeNode("References.ico", 5, 5);
+            System.Windows.Forms.TreeNode treeNode76 = new System.Windows.Forms.TreeNode("SolutionExplorer.ico", 5, 5);
+            System.Windows.Forms.TreeNode treeNode77 = new System.Windows.Forms.TreeNode("TaskListWindow.ico", 5, 5);
+            System.Windows.Forms.TreeNode treeNode78 = new System.Windows.Forms.TreeNode("ToolboxWindow.ico", 5, 5);
+            System.Windows.Forms.TreeNode treeNode79 = new System.Windows.Forms.TreeNode("Images", 2, 1, new System.Windows.Forms.TreeNode[] {
+            treeNode72,
+            treeNode73,
+            treeNode74,
+            treeNode75,
+            treeNode76,
+            treeNode77,
+            treeNode78});
+            System.Windows.Forms.TreeNode treeNode80 = new System.Windows.Forms.TreeNode("AboutDialog.cs", 8, 8);
+            System.Windows.Forms.TreeNode treeNode81 = new System.Windows.Forms.TreeNode("App.ico", 5, 5);
+            System.Windows.Forms.TreeNode treeNode82 = new System.Windows.Forms.TreeNode("AssemblyInfo.cs", 7, 7);
+            System.Windows.Forms.TreeNode treeNode83 = new System.Windows.Forms.TreeNode("DummyOutputWindow.cs", 8, 8);
+            System.Windows.Forms.TreeNode treeNode84 = new System.Windows.Forms.TreeNode("DummyPropertyWindow.cs", 8, 8);
+            System.Windows.Forms.TreeNode treeNode85 = new System.Windows.Forms.TreeNode("DummySolutionExplorer.cs", 8, 8);
+            System.Windows.Forms.TreeNode treeNode86 = new System.Windows.Forms.TreeNode("DummyTaskList.cs", 8, 8);
+            System.Windows.Forms.TreeNode treeNode87 = new System.Windows.Forms.TreeNode("DummyToolbox.cs", 8, 8);
+            System.Windows.Forms.TreeNode treeNode88 = new System.Windows.Forms.TreeNode("MianForm.cs", 8, 8);
+            System.Windows.Forms.TreeNode treeNode89 = new System.Windows.Forms.TreeNode("Options.cs", 7, 7);
+            System.Windows.Forms.TreeNode treeNode90 = new System.Windows.Forms.TreeNode("OptionsDialog.cs", 8, 8);
+            System.Windows.Forms.TreeNode treeNode91 = new System.Windows.Forms.TreeNode("DockSample", 3, 3, new System.Windows.Forms.TreeNode[] {
+            treeNode71,
+            treeNode79,
+            treeNode80,
+            treeNode81,
+            treeNode82,
+            treeNode83,
+            treeNode84,
+            treeNode85,
+            treeNode86,
+            treeNode87,
+            treeNode88,
+            treeNode89,
+            treeNode90});
+            System.Windows.Forms.TreeNode treeNode92 = new System.Windows.Forms.TreeNode("System", 6, 6);
+            System.Windows.Forms.TreeNode treeNode93 = new System.Windows.Forms.TreeNode("System.Data", 6, 6);
+            System.Windows.Forms.TreeNode treeNode94 = new System.Windows.Forms.TreeNode("System.Design", 6, 6);
+            System.Windows.Forms.TreeNode treeNode95 = new System.Windows.Forms.TreeNode("System.Drawing", 6, 6);
+            System.Windows.Forms.TreeNode treeNode96 = new System.Windows.Forms.TreeNode("System.Windows.Forms", 6, 6);
+            System.Windows.Forms.TreeNode treeNode97 = new System.Windows.Forms.TreeNode("System.XML", 6, 6);
+            System.Windows.Forms.TreeNode treeNode98 = new System.Windows.Forms.TreeNode("References", 4, 4, new System.Windows.Forms.TreeNode[] {
+            treeNode92,
+            treeNode93,
+            treeNode94,
+            treeNode95,
+            treeNode96,
+            treeNode97});
+            System.Windows.Forms.TreeNode treeNode99 = new System.Windows.Forms.TreeNode("DockWindow.AutoHideNo.bmp", 9, 9);
+            System.Windows.Forms.TreeNode treeNode100 = new System.Windows.Forms.TreeNode("DockWindow.AutoHideYes.bmp", 9, 9);
+            System.Windows.Forms.TreeNode treeNode101 = new System.Windows.Forms.TreeNode("DockWindow.Close.bmp", 9, 9);
+            System.Windows.Forms.TreeNode treeNode102 = new System.Windows.Forms.TreeNode("DocumentWindow.Close.bmp", 9, 9);
+            System.Windows.Forms.TreeNode treeNode103 = new System.Windows.Forms.TreeNode("DocumentWindow.ScrollLeftDisabled.bmp", 9, 9);
+            System.Windows.Forms.TreeNode treeNode104 = new System.Windows.Forms.TreeNode("DocumentWindow.ScrollLeftEnabled.bmp", 9, 9);
+            System.Windows.Forms.TreeNode treeNode105 = new System.Windows.Forms.TreeNode("DocumentWindow.ScrollRightDisabled.bmp", 9, 9);
+            System.Windows.Forms.TreeNode treeNode106 = new System.Windows.Forms.TreeNode("DocumentWindow.ScrollRightEnabled.bmp", 9, 9);
+            System.Windows.Forms.TreeNode treeNode107 = new System.Windows.Forms.TreeNode("Resources", 2, 1, new System.Windows.Forms.TreeNode[] {
+            treeNode99,
+            treeNode100,
+            treeNode101,
+            treeNode102,
+            treeNode103,
+            treeNode104,
+            treeNode105,
+            treeNode106});
+            System.Windows.Forms.TreeNode treeNode108 = new System.Windows.Forms.TreeNode("Enums.cs", 7, 7);
+            System.Windows.Forms.TreeNode treeNode109 = new System.Windows.Forms.TreeNode("Gdi32.cs", 7, 3);
+            System.Windows.Forms.TreeNode treeNode110 = new System.Windows.Forms.TreeNode("Structs.cs", 7, 7);
+            System.Windows.Forms.TreeNode treeNode111 = new System.Windows.Forms.TreeNode("User32.cs", 7, 7);
+            System.Windows.Forms.TreeNode treeNode112 = new System.Windows.Forms.TreeNode("Win32", 2, 1, new System.Windows.Forms.TreeNode[] {
+            treeNode108,
+            treeNode109,
+            treeNode110,
+            treeNode111});
+            System.Windows.Forms.TreeNode treeNode113 = new System.Windows.Forms.TreeNode("AssemblyInfo.cs", 7, 7);
+            System.Windows.Forms.TreeNode treeNode114 = new System.Windows.Forms.TreeNode("Content.cs", 8, 8);
+            System.Windows.Forms.TreeNode treeNode115 = new System.Windows.Forms.TreeNode("CotentCollection.cs", 7, 7);
+            System.Windows.Forms.TreeNode treeNode116 = new System.Windows.Forms.TreeNode("CotentWindowCollection.cs", 7, 7);
+            System.Windows.Forms.TreeNode treeNode117 = new System.Windows.Forms.TreeNode("DockHelper.cs", 7, 7);
+            System.Windows.Forms.TreeNode treeNode118 = new System.Windows.Forms.TreeNode("DragHandler.cs", 7, 7);
+            System.Windows.Forms.TreeNode treeNode119 = new System.Windows.Forms.TreeNode("DragHandlerBase.cs", 7, 7);
+            System.Windows.Forms.TreeNode treeNode120 = new System.Windows.Forms.TreeNode("FloatWindow.cs", 8, 8);
+            System.Windows.Forms.TreeNode treeNode121 = new System.Windows.Forms.TreeNode("HiddenMdiChild.cs", 8, 8);
+            System.Windows.Forms.TreeNode treeNode122 = new System.Windows.Forms.TreeNode("InertButton.cs", 7, 7);
+            System.Windows.Forms.TreeNode treeNode123 = new System.Windows.Forms.TreeNode("Measures.cs", 7, 7);
+            System.Windows.Forms.TreeNode treeNode124 = new System.Windows.Forms.TreeNode("NormalTabStripWindow.cs", 8, 8);
+            System.Windows.Forms.TreeNode treeNode125 = new System.Windows.Forms.TreeNode("ResourceHelper.cs", 7, 7);
+            System.Windows.Forms.TreeNode treeNode126 = new System.Windows.Forms.TreeNode("WeifenLuo.WinFormsUI.Docking", 3, 3, new System.Windows.Forms.TreeNode[] {
+            treeNode98,
+            treeNode107,
+            treeNode112,
+            treeNode113,
+            treeNode114,
+            treeNode115,
+            treeNode116,
+            treeNode117,
+            treeNode118,
+            treeNode119,
+            treeNode120,
+            treeNode121,
+            treeNode122,
+            treeNode123,
+            treeNode124,
+            treeNode125});
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DummySolutionExplorer));
             this.treeView1 = new System.Windows.Forms.TreeView();
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
+            this.removeFromSolutionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // treeView1
@@ -164,260 +167,260 @@ namespace DockSample
             this.treeView1.Indent = 19;
             this.treeView1.Location = new System.Drawing.Point(0, 24);
             this.treeView1.Name = "treeView1";
-            treeNode1.Name = "";
-            treeNode1.Text = "Solution \'WinFormsUI\' (2 projects)";
-            treeNode2.ImageIndex = 6;
-            treeNode2.Name = "";
-            treeNode2.SelectedImageIndex = 6;
-            treeNode2.Text = "System";
-            treeNode3.ImageIndex = 6;
-            treeNode3.Name = "";
-            treeNode3.SelectedImageIndex = 6;
-            treeNode3.Text = "System.Data";
-            treeNode4.ImageIndex = 6;
-            treeNode4.Name = "";
-            treeNode4.SelectedImageIndex = 6;
-            treeNode4.Text = "System.Drawing";
-            treeNode5.ImageIndex = 6;
-            treeNode5.Name = "";
-            treeNode5.SelectedImageIndex = 6;
-            treeNode5.Text = "System.Windows.Forms";
-            treeNode6.ImageIndex = 6;
-            treeNode6.Name = "";
-            treeNode6.SelectedImageIndex = 6;
-            treeNode6.Text = "System.XML";
-            treeNode7.ImageIndex = 6;
-            treeNode7.Name = "";
-            treeNode7.SelectedImageIndex = 6;
-            treeNode7.Text = "WeifenLuo.WinFormsUI.Docking";
-            treeNode8.ImageIndex = 4;
-            treeNode8.Name = "";
-            treeNode8.SelectedImageIndex = 4;
-            treeNode8.Text = "References";
-            treeNode9.ImageIndex = 5;
-            treeNode9.Name = "";
-            treeNode9.SelectedImageIndex = 5;
-            treeNode9.Text = "BlankIcon.ico";
-            treeNode10.ImageIndex = 5;
-            treeNode10.Name = "";
-            treeNode10.SelectedImageIndex = 5;
-            treeNode10.Text = "CSProject.ico";
-            treeNode11.ImageIndex = 5;
-            treeNode11.Name = "";
-            treeNode11.SelectedImageIndex = 5;
-            treeNode11.Text = "OutputWindow.ico";
-            treeNode12.ImageIndex = 5;
-            treeNode12.Name = "";
-            treeNode12.SelectedImageIndex = 5;
-            treeNode12.Text = "References.ico";
-            treeNode13.ImageIndex = 5;
-            treeNode13.Name = "";
-            treeNode13.SelectedImageIndex = 5;
-            treeNode13.Text = "SolutionExplorer.ico";
-            treeNode14.ImageIndex = 5;
-            treeNode14.Name = "";
-            treeNode14.SelectedImageIndex = 5;
-            treeNode14.Text = "TaskListWindow.ico";
-            treeNode15.ImageIndex = 5;
-            treeNode15.Name = "";
-            treeNode15.SelectedImageIndex = 5;
-            treeNode15.Text = "ToolboxWindow.ico";
-            treeNode16.ImageIndex = 2;
-            treeNode16.Name = "";
-            treeNode16.SelectedImageIndex = 1;
-            treeNode16.Text = "Images";
-            treeNode17.ImageIndex = 8;
-            treeNode17.Name = "";
-            treeNode17.SelectedImageIndex = 8;
-            treeNode17.Text = "AboutDialog.cs";
-            treeNode18.ImageIndex = 5;
-            treeNode18.Name = "";
-            treeNode18.SelectedImageIndex = 5;
-            treeNode18.Text = "App.ico";
-            treeNode19.ImageIndex = 7;
-            treeNode19.Name = "";
-            treeNode19.SelectedImageIndex = 7;
-            treeNode19.Text = "AssemblyInfo.cs";
-            treeNode20.ImageIndex = 8;
-            treeNode20.Name = "";
-            treeNode20.SelectedImageIndex = 8;
-            treeNode20.Text = "DummyOutputWindow.cs";
-            treeNode21.ImageIndex = 8;
-            treeNode21.Name = "";
-            treeNode21.SelectedImageIndex = 8;
-            treeNode21.Text = "DummyPropertyWindow.cs";
-            treeNode22.ImageIndex = 8;
-            treeNode22.Name = "";
-            treeNode22.SelectedImageIndex = 8;
-            treeNode22.Text = "DummySolutionExplorer.cs";
-            treeNode23.ImageIndex = 8;
-            treeNode23.Name = "";
-            treeNode23.SelectedImageIndex = 8;
-            treeNode23.Text = "DummyTaskList.cs";
-            treeNode24.ImageIndex = 8;
-            treeNode24.Name = "";
-            treeNode24.SelectedImageIndex = 8;
-            treeNode24.Text = "DummyToolbox.cs";
-            treeNode25.ImageIndex = 8;
-            treeNode25.Name = "";
-            treeNode25.SelectedImageIndex = 8;
-            treeNode25.Text = "MianForm.cs";
-            treeNode26.ImageIndex = 7;
-            treeNode26.Name = "";
-            treeNode26.SelectedImageIndex = 7;
-            treeNode26.Text = "Options.cs";
-            treeNode27.ImageIndex = 8;
-            treeNode27.Name = "";
-            treeNode27.SelectedImageIndex = 8;
-            treeNode27.Text = "OptionsDialog.cs";
-            treeNode28.ImageIndex = 3;
-            treeNode28.Name = "";
-            treeNode28.SelectedImageIndex = 3;
-            treeNode28.Text = "DockSample";
-            treeNode29.ImageIndex = 6;
-            treeNode29.Name = "";
-            treeNode29.SelectedImageIndex = 6;
-            treeNode29.Text = "System";
-            treeNode30.ImageIndex = 6;
-            treeNode30.Name = "";
-            treeNode30.SelectedImageIndex = 6;
-            treeNode30.Text = "System.Data";
-            treeNode31.ImageIndex = 6;
-            treeNode31.Name = "";
-            treeNode31.SelectedImageIndex = 6;
-            treeNode31.Text = "System.Design";
-            treeNode32.ImageIndex = 6;
-            treeNode32.Name = "";
-            treeNode32.SelectedImageIndex = 6;
-            treeNode32.Text = "System.Drawing";
-            treeNode33.ImageIndex = 6;
-            treeNode33.Name = "";
-            treeNode33.SelectedImageIndex = 6;
-            treeNode33.Text = "System.Windows.Forms";
-            treeNode34.ImageIndex = 6;
-            treeNode34.Name = "";
-            treeNode34.SelectedImageIndex = 6;
-            treeNode34.Text = "System.XML";
-            treeNode35.ImageIndex = 4;
-            treeNode35.Name = "";
-            treeNode35.SelectedImageIndex = 4;
-            treeNode35.Text = "References";
-            treeNode36.ImageIndex = 9;
-            treeNode36.Name = "";
-            treeNode36.SelectedImageIndex = 9;
-            treeNode36.Text = "DockWindow.AutoHideNo.bmp";
-            treeNode37.ImageIndex = 9;
-            treeNode37.Name = "";
-            treeNode37.SelectedImageIndex = 9;
-            treeNode37.Text = "DockWindow.AutoHideYes.bmp";
-            treeNode38.ImageIndex = 9;
-            treeNode38.Name = "";
-            treeNode38.SelectedImageIndex = 9;
-            treeNode38.Text = "DockWindow.Close.bmp";
-            treeNode39.ImageIndex = 9;
-            treeNode39.Name = "";
-            treeNode39.SelectedImageIndex = 9;
-            treeNode39.Text = "DocumentWindow.Close.bmp";
-            treeNode40.ImageIndex = 9;
-            treeNode40.Name = "";
-            treeNode40.SelectedImageIndex = 9;
-            treeNode40.Text = "DocumentWindow.ScrollLeftDisabled.bmp";
-            treeNode41.ImageIndex = 9;
-            treeNode41.Name = "";
-            treeNode41.SelectedImageIndex = 9;
-            treeNode41.Text = "DocumentWindow.ScrollLeftEnabled.bmp";
-            treeNode42.ImageIndex = 9;
-            treeNode42.Name = "";
-            treeNode42.SelectedImageIndex = 9;
-            treeNode42.Text = "DocumentWindow.ScrollRightDisabled.bmp";
-            treeNode43.ImageIndex = 9;
-            treeNode43.Name = "";
-            treeNode43.SelectedImageIndex = 9;
-            treeNode43.Text = "DocumentWindow.ScrollRightEnabled.bmp";
-            treeNode44.ImageIndex = 2;
-            treeNode44.Name = "";
-            treeNode44.SelectedImageIndex = 1;
-            treeNode44.Text = "Resources";
-            treeNode45.ImageIndex = 7;
-            treeNode45.Name = "";
-            treeNode45.SelectedImageIndex = 7;
-            treeNode45.Text = "Enums.cs";
-            treeNode46.ImageIndex = 7;
-            treeNode46.Name = "";
-            treeNode46.SelectedImageIndex = 3;
-            treeNode46.Text = "Gdi32.cs";
-            treeNode47.ImageIndex = 7;
-            treeNode47.Name = "";
-            treeNode47.SelectedImageIndex = 7;
-            treeNode47.Text = "Structs.cs";
-            treeNode48.ImageIndex = 7;
-            treeNode48.Name = "";
-            treeNode48.SelectedImageIndex = 7;
-            treeNode48.Text = "User32.cs";
-            treeNode49.ImageIndex = 2;
-            treeNode49.Name = "";
-            treeNode49.SelectedImageIndex = 1;
-            treeNode49.Text = "Win32";
-            treeNode50.ImageIndex = 7;
-            treeNode50.Name = "";
-            treeNode50.SelectedImageIndex = 7;
-            treeNode50.Text = "AssemblyInfo.cs";
-            treeNode51.ImageIndex = 8;
-            treeNode51.Name = "";
-            treeNode51.SelectedImageIndex = 8;
-            treeNode51.Text = "Content.cs";
-            treeNode52.ImageIndex = 7;
-            treeNode52.Name = "";
-            treeNode52.SelectedImageIndex = 7;
-            treeNode52.Text = "CotentCollection.cs";
-            treeNode53.ImageIndex = 7;
-            treeNode53.Name = "";
-            treeNode53.SelectedImageIndex = 7;
-            treeNode53.Text = "CotentWindowCollection.cs";
-            treeNode54.ImageIndex = 7;
-            treeNode54.Name = "";
-            treeNode54.SelectedImageIndex = 7;
-            treeNode54.Text = "DockHelper.cs";
-            treeNode55.ImageIndex = 7;
-            treeNode55.Name = "";
-            treeNode55.SelectedImageIndex = 7;
-            treeNode55.Text = "DragHandler.cs";
-            treeNode56.ImageIndex = 7;
-            treeNode56.Name = "";
-            treeNode56.SelectedImageIndex = 7;
-            treeNode56.Text = "DragHandlerBase.cs";
-            treeNode57.ImageIndex = 8;
-            treeNode57.Name = "";
-            treeNode57.SelectedImageIndex = 8;
-            treeNode57.Text = "FloatWindow.cs";
-            treeNode58.ImageIndex = 8;
-            treeNode58.Name = "";
-            treeNode58.SelectedImageIndex = 8;
-            treeNode58.Text = "HiddenMdiChild.cs";
-            treeNode59.ImageIndex = 7;
-            treeNode59.Name = "";
-            treeNode59.SelectedImageIndex = 7;
-            treeNode59.Text = "InertButton.cs";
-            treeNode60.ImageIndex = 7;
-            treeNode60.Name = "";
-            treeNode60.SelectedImageIndex = 7;
-            treeNode60.Text = "Measures.cs";
-            treeNode61.ImageIndex = 8;
-            treeNode61.Name = "";
-            treeNode61.SelectedImageIndex = 8;
-            treeNode61.Text = "NormalTabStripWindow.cs";
-            treeNode62.ImageIndex = 7;
-            treeNode62.Name = "";
-            treeNode62.SelectedImageIndex = 7;
-            treeNode62.Text = "ResourceHelper.cs";
-            treeNode63.ImageIndex = 3;
-            treeNode63.Name = "";
-            treeNode63.SelectedImageIndex = 3;
-            treeNode63.Text = "WeifenLuo.WinFormsUI.Docking";
+            treeNode64.Name = "";
+            treeNode64.Text = "Solution \'WinFormsUI\' (2 projects)";
+            treeNode65.ImageIndex = 6;
+            treeNode65.Name = "";
+            treeNode65.SelectedImageIndex = 6;
+            treeNode65.Text = "System";
+            treeNode66.ImageIndex = 6;
+            treeNode66.Name = "";
+            treeNode66.SelectedImageIndex = 6;
+            treeNode66.Text = "System.Data";
+            treeNode67.ImageIndex = 6;
+            treeNode67.Name = "";
+            treeNode67.SelectedImageIndex = 6;
+            treeNode67.Text = "System.Drawing";
+            treeNode68.ImageIndex = 6;
+            treeNode68.Name = "";
+            treeNode68.SelectedImageIndex = 6;
+            treeNode68.Text = "System.Windows.Forms";
+            treeNode69.ImageIndex = 6;
+            treeNode69.Name = "";
+            treeNode69.SelectedImageIndex = 6;
+            treeNode69.Text = "System.XML";
+            treeNode70.ImageIndex = 6;
+            treeNode70.Name = "";
+            treeNode70.SelectedImageIndex = 6;
+            treeNode70.Text = "WeifenLuo.WinFormsUI.Docking";
+            treeNode71.ImageIndex = 4;
+            treeNode71.Name = "";
+            treeNode71.SelectedImageIndex = 4;
+            treeNode71.Text = "References";
+            treeNode72.ImageIndex = 5;
+            treeNode72.Name = "";
+            treeNode72.SelectedImageIndex = 5;
+            treeNode72.Text = "BlankIcon.ico";
+            treeNode73.ImageIndex = 5;
+            treeNode73.Name = "";
+            treeNode73.SelectedImageIndex = 5;
+            treeNode73.Text = "CSProject.ico";
+            treeNode74.ImageIndex = 5;
+            treeNode74.Name = "";
+            treeNode74.SelectedImageIndex = 5;
+            treeNode74.Text = "OutputWindow.ico";
+            treeNode75.ImageIndex = 5;
+            treeNode75.Name = "";
+            treeNode75.SelectedImageIndex = 5;
+            treeNode75.Text = "References.ico";
+            treeNode76.ImageIndex = 5;
+            treeNode76.Name = "";
+            treeNode76.SelectedImageIndex = 5;
+            treeNode76.Text = "SolutionExplorer.ico";
+            treeNode77.ImageIndex = 5;
+            treeNode77.Name = "";
+            treeNode77.SelectedImageIndex = 5;
+            treeNode77.Text = "TaskListWindow.ico";
+            treeNode78.ImageIndex = 5;
+            treeNode78.Name = "";
+            treeNode78.SelectedImageIndex = 5;
+            treeNode78.Text = "ToolboxWindow.ico";
+            treeNode79.ImageIndex = 2;
+            treeNode79.Name = "";
+            treeNode79.SelectedImageIndex = 1;
+            treeNode79.Text = "Images";
+            treeNode80.ImageIndex = 8;
+            treeNode80.Name = "";
+            treeNode80.SelectedImageIndex = 8;
+            treeNode80.Text = "AboutDialog.cs";
+            treeNode81.ImageIndex = 5;
+            treeNode81.Name = "";
+            treeNode81.SelectedImageIndex = 5;
+            treeNode81.Text = "App.ico";
+            treeNode82.ImageIndex = 7;
+            treeNode82.Name = "";
+            treeNode82.SelectedImageIndex = 7;
+            treeNode82.Text = "AssemblyInfo.cs";
+            treeNode83.ImageIndex = 8;
+            treeNode83.Name = "";
+            treeNode83.SelectedImageIndex = 8;
+            treeNode83.Text = "DummyOutputWindow.cs";
+            treeNode84.ImageIndex = 8;
+            treeNode84.Name = "";
+            treeNode84.SelectedImageIndex = 8;
+            treeNode84.Text = "DummyPropertyWindow.cs";
+            treeNode85.ImageIndex = 8;
+            treeNode85.Name = "";
+            treeNode85.SelectedImageIndex = 8;
+            treeNode85.Text = "DummySolutionExplorer.cs";
+            treeNode86.ImageIndex = 8;
+            treeNode86.Name = "";
+            treeNode86.SelectedImageIndex = 8;
+            treeNode86.Text = "DummyTaskList.cs";
+            treeNode87.ImageIndex = 8;
+            treeNode87.Name = "";
+            treeNode87.SelectedImageIndex = 8;
+            treeNode87.Text = "DummyToolbox.cs";
+            treeNode88.ImageIndex = 8;
+            treeNode88.Name = "";
+            treeNode88.SelectedImageIndex = 8;
+            treeNode88.Text = "MianForm.cs";
+            treeNode89.ImageIndex = 7;
+            treeNode89.Name = "";
+            treeNode89.SelectedImageIndex = 7;
+            treeNode89.Text = "Options.cs";
+            treeNode90.ImageIndex = 8;
+            treeNode90.Name = "";
+            treeNode90.SelectedImageIndex = 8;
+            treeNode90.Text = "OptionsDialog.cs";
+            treeNode91.ImageIndex = 3;
+            treeNode91.Name = "";
+            treeNode91.SelectedImageIndex = 3;
+            treeNode91.Text = "DockSample";
+            treeNode92.ImageIndex = 6;
+            treeNode92.Name = "";
+            treeNode92.SelectedImageIndex = 6;
+            treeNode92.Text = "System";
+            treeNode93.ImageIndex = 6;
+            treeNode93.Name = "";
+            treeNode93.SelectedImageIndex = 6;
+            treeNode93.Text = "System.Data";
+            treeNode94.ImageIndex = 6;
+            treeNode94.Name = "";
+            treeNode94.SelectedImageIndex = 6;
+            treeNode94.Text = "System.Design";
+            treeNode95.ImageIndex = 6;
+            treeNode95.Name = "";
+            treeNode95.SelectedImageIndex = 6;
+            treeNode95.Text = "System.Drawing";
+            treeNode96.ImageIndex = 6;
+            treeNode96.Name = "";
+            treeNode96.SelectedImageIndex = 6;
+            treeNode96.Text = "System.Windows.Forms";
+            treeNode97.ImageIndex = 6;
+            treeNode97.Name = "";
+            treeNode97.SelectedImageIndex = 6;
+            treeNode97.Text = "System.XML";
+            treeNode98.ImageIndex = 4;
+            treeNode98.Name = "";
+            treeNode98.SelectedImageIndex = 4;
+            treeNode98.Text = "References";
+            treeNode99.ImageIndex = 9;
+            treeNode99.Name = "";
+            treeNode99.SelectedImageIndex = 9;
+            treeNode99.Text = "DockWindow.AutoHideNo.bmp";
+            treeNode100.ImageIndex = 9;
+            treeNode100.Name = "";
+            treeNode100.SelectedImageIndex = 9;
+            treeNode100.Text = "DockWindow.AutoHideYes.bmp";
+            treeNode101.ImageIndex = 9;
+            treeNode101.Name = "";
+            treeNode101.SelectedImageIndex = 9;
+            treeNode101.Text = "DockWindow.Close.bmp";
+            treeNode102.ImageIndex = 9;
+            treeNode102.Name = "";
+            treeNode102.SelectedImageIndex = 9;
+            treeNode102.Text = "DocumentWindow.Close.bmp";
+            treeNode103.ImageIndex = 9;
+            treeNode103.Name = "";
+            treeNode103.SelectedImageIndex = 9;
+            treeNode103.Text = "DocumentWindow.ScrollLeftDisabled.bmp";
+            treeNode104.ImageIndex = 9;
+            treeNode104.Name = "";
+            treeNode104.SelectedImageIndex = 9;
+            treeNode104.Text = "DocumentWindow.ScrollLeftEnabled.bmp";
+            treeNode105.ImageIndex = 9;
+            treeNode105.Name = "";
+            treeNode105.SelectedImageIndex = 9;
+            treeNode105.Text = "DocumentWindow.ScrollRightDisabled.bmp";
+            treeNode106.ImageIndex = 9;
+            treeNode106.Name = "";
+            treeNode106.SelectedImageIndex = 9;
+            treeNode106.Text = "DocumentWindow.ScrollRightEnabled.bmp";
+            treeNode107.ImageIndex = 2;
+            treeNode107.Name = "";
+            treeNode107.SelectedImageIndex = 1;
+            treeNode107.Text = "Resources";
+            treeNode108.ImageIndex = 7;
+            treeNode108.Name = "";
+            treeNode108.SelectedImageIndex = 7;
+            treeNode108.Text = "Enums.cs";
+            treeNode109.ImageIndex = 7;
+            treeNode109.Name = "";
+            treeNode109.SelectedImageIndex = 3;
+            treeNode109.Text = "Gdi32.cs";
+            treeNode110.ImageIndex = 7;
+            treeNode110.Name = "";
+            treeNode110.SelectedImageIndex = 7;
+            treeNode110.Text = "Structs.cs";
+            treeNode111.ImageIndex = 7;
+            treeNode111.Name = "";
+            treeNode111.SelectedImageIndex = 7;
+            treeNode111.Text = "User32.cs";
+            treeNode112.ImageIndex = 2;
+            treeNode112.Name = "";
+            treeNode112.SelectedImageIndex = 1;
+            treeNode112.Text = "Win32";
+            treeNode113.ImageIndex = 7;
+            treeNode113.Name = "";
+            treeNode113.SelectedImageIndex = 7;
+            treeNode113.Text = "AssemblyInfo.cs";
+            treeNode114.ImageIndex = 8;
+            treeNode114.Name = "";
+            treeNode114.SelectedImageIndex = 8;
+            treeNode114.Text = "Content.cs";
+            treeNode115.ImageIndex = 7;
+            treeNode115.Name = "";
+            treeNode115.SelectedImageIndex = 7;
+            treeNode115.Text = "CotentCollection.cs";
+            treeNode116.ImageIndex = 7;
+            treeNode116.Name = "";
+            treeNode116.SelectedImageIndex = 7;
+            treeNode116.Text = "CotentWindowCollection.cs";
+            treeNode117.ImageIndex = 7;
+            treeNode117.Name = "";
+            treeNode117.SelectedImageIndex = 7;
+            treeNode117.Text = "DockHelper.cs";
+            treeNode118.ImageIndex = 7;
+            treeNode118.Name = "";
+            treeNode118.SelectedImageIndex = 7;
+            treeNode118.Text = "DragHandler.cs";
+            treeNode119.ImageIndex = 7;
+            treeNode119.Name = "";
+            treeNode119.SelectedImageIndex = 7;
+            treeNode119.Text = "DragHandlerBase.cs";
+            treeNode120.ImageIndex = 8;
+            treeNode120.Name = "";
+            treeNode120.SelectedImageIndex = 8;
+            treeNode120.Text = "FloatWindow.cs";
+            treeNode121.ImageIndex = 8;
+            treeNode121.Name = "";
+            treeNode121.SelectedImageIndex = 8;
+            treeNode121.Text = "HiddenMdiChild.cs";
+            treeNode122.ImageIndex = 7;
+            treeNode122.Name = "";
+            treeNode122.SelectedImageIndex = 7;
+            treeNode122.Text = "InertButton.cs";
+            treeNode123.ImageIndex = 7;
+            treeNode123.Name = "";
+            treeNode123.SelectedImageIndex = 7;
+            treeNode123.Text = "Measures.cs";
+            treeNode124.ImageIndex = 8;
+            treeNode124.Name = "";
+            treeNode124.SelectedImageIndex = 8;
+            treeNode124.Text = "NormalTabStripWindow.cs";
+            treeNode125.ImageIndex = 7;
+            treeNode125.Name = "";
+            treeNode125.SelectedImageIndex = 7;
+            treeNode125.Text = "ResourceHelper.cs";
+            treeNode126.ImageIndex = 3;
+            treeNode126.Name = "";
+            treeNode126.SelectedImageIndex = 3;
+            treeNode126.Text = "WeifenLuo.WinFormsUI.Docking";
             this.treeView1.Nodes.AddRange(new System.Windows.Forms.TreeNode[] {
-            treeNode1,
-            treeNode28,
-            treeNode63});
+            treeNode64,
+            treeNode91,
+            treeNode126});
             this.treeView1.SelectedImageIndex = 0;
             this.treeView1.Size = new System.Drawing.Size(245, 297);
             this.treeView1.TabIndex = 0;
@@ -437,6 +440,20 @@ namespace DockSample
             this.imageList1.Images.SetKeyName(8, "");
             this.imageList1.Images.SetKeyName(9, "");
             // 
+            // removeFromSolutionToolStripMenuItem
+            // 
+            this.removeFromSolutionToolStripMenuItem.Name = "removeFromSolutionToolStripMenuItem";
+            this.removeFromSolutionToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
+            this.removeFromSolutionToolStripMenuItem.Text = "Remove from solution";
+            this.removeFromSolutionToolStripMenuItem.Click += new System.EventHandler(this.removeFromSolutionToolStripMenuItem_Click);
+            // 
+            // contextMenuStrip1
+            // 
+            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.removeFromSolutionToolStripMenuItem});
+            this.contextMenuStrip1.Name = "contextMenuStrip1";
+            this.contextMenuStrip1.Size = new System.Drawing.Size(190, 48);
+            // 
             // DummySolutionExplorer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -453,6 +470,7 @@ namespace DockSample
             this.ShowHint = WeifenLuo.WinFormsUI.Docking.DockState.DockRight;
             this.TabText = "Solution Explorer";
             this.Text = "Solution Explorer - WinFormsUI";
+            this.contextMenuStrip1.ResumeLayout(false);
             this.ResumeLayout(false);
 
 		}
@@ -460,5 +478,7 @@ namespace DockSample
 
         private System.Windows.Forms.TreeView treeView1;
         private System.Windows.Forms.ImageList imageList1;
+        private System.Windows.Forms.ToolStripMenuItem removeFromSolutionToolStripMenuItem;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
     }
 }

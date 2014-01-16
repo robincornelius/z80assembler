@@ -27,6 +27,8 @@ namespace Z80IDE
         {
             InitializeComponent();
 
+            this.FormClosing += new FormClosingEventHandler(Form1_FormClosing);
+
             m_solutionExplorer = new DummySolutionExplorer(solution);
         
 
@@ -41,25 +43,69 @@ namespace Z80IDE
 
             m_solutionExplorer.SelectedFile += new DummySolutionExplorer.SelectedFileEventHandler(m_solutionExplorer_SelectedFile);
 
-            solution.basefolder = "C:\\code\\MCSD100J";
-            solution.name = "MCSD100J";
-            solution.addfile("SU200.mac", "");
-            solution.addfile("TEST200.mac", "");
+          //  solution.details.basefolder = "C:\\code\\MCSD100J";
+         //   solution.details.name = "MCSD100J";
+         //   solution.addfile("SU200.mac", "");
+         //   solution.addfile("TEST200.mac", "");
+
+            //solution.Serialize("myz802.sol");
+            //solution.Deserialize("myz802.sol");
          
+        }
+
+        void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (solution.isDirty == true)
+            {
+                if (MessageBox.Show("Solution not saved, continue", "Unsaved changes", MessageBoxButtons.OKCancel) == DialogResult.Cancel)
+                {
+                    e.Cancel = true;
+                }
+            }
         }
 
         void m_solutionExplorer_SelectedFile(object sender, SelectedFileEventArgs e)
         {
 
-            if(editors.ContainsKey(e.name))
+            //FIXME better document tracking required,
+            //if you undock the document its not in dockPanel anymore
+
+            foreach (IDockContent d in dockPanel.Documents)
             {
-                 editors[e.name].Select();
+                //Only one solution supported at a time currently
+                if (d.GetType() == typeof(SolutionSettings) && e.rootnode == true)
+                {
+                    SolutionSettings ss = (SolutionSettings)d;
+                    ss.Show();
+                    return;
+                }
+
+                if (d.GetType() == typeof(EditorWindow) && e.rootnode == false)
+                {
+                    EditorWindow ew = (EditorWindow)d;
+                    if (ew.filename == e.name)
+                    {
+                        ew.Show();
+                        return;
+                    }
+
+                }
             }
-            else
-            {
-                loadfile(e.name);
-            }
-          
+
+           if(e.rootnode==true)
+           {
+                SolutionSettings ss2 = new SolutionSettings();
+                ss2.MdiParent = this;
+                ss2.DockPanel = this.dockPanel;
+                ss2.Show();
+                return;
+           }
+           else
+           {
+                 loadfile(e.name);
+           }
+
+         
         }
 
         public void loadfile(string name)
@@ -97,7 +143,7 @@ namespace Z80IDE
 
             ew.Closing += new EditorWindow.EditorClosingHandler(ew_Closing);
             
-            solution.addfile(filename, "");
+            solution.addfile(filename);
         }
 
         void ew_Closing(object sender, EventArgs e)
@@ -111,8 +157,60 @@ namespace Z80IDE
         {
             m_outputWindow.clear();
             m_outputWindow.appendmsg("Starting build");
-            solution.build(m_outputWindow);
+            BuildManager bm = new BuildManager(solution, m_outputWindow);
+            bm.build();
         }
+
+        private void openSolutionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog dialog = new OpenFileDialog();
+            dialog.Filter = "Solution files (*.sol)|*.sol";
+            //dialog.InitialDirectory = @"C:\";
+            dialog.Title = "Please select a solution to open";
+            if (dialog.ShowDialog() == DialogResult.OK)
+            {
+                solution.Deserialize(dialog.FileName);
+            }             
+
+        }
+
+        private void saveSolutionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //SaveFileDialog dialog = new SaveFileDialog();
+            //dialog.Filter = "Solution files (*.sol)|*.sol";
+            ////dialog.InitialDirectory = @"C:\";
+            //dialog.Title = "Please select a solution to open";
+            //if (dialog.ShowDialog() == DialogResult.OK)
+            //{
+                solution.Serialize();
+            //}   
+        }
+
+        private void loadToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog dialog = new OpenFileDialog();
+            dialog.Filter = "Assembler files (*.asm)|*.asm|Assembler Files (*.mac)|*.mac|Def files (*.def)|*.def";
+            //dialog.InitialDirectory = @"C:\";
+            dialog.Title = "Select a file to insert to solution";
+            if (dialog.ShowDialog() == DialogResult.OK)
+            {
+                solution.addfile(dialog.FileName);
+                solution.Serialize();
+            }     
+        }
+
+        private void newSolutionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            NewSolution ns = new NewSolution();
+            if (ns.ShowDialog() == DialogResult.OK)
+            {
+                solution.updatedetails(ns.getsolution());
+                solution.Serialize();
+                
+            }
+        }
+
+        
 
       
 

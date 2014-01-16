@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Collections;
 using System.Text.RegularExpressions;
+using System.IO;
 
 namespace z80assemble
 {
@@ -64,6 +65,9 @@ namespace z80assemble
         List<string> externs = new List<string>();
         Dictionary<int,string> linkrequiredat = new Dictionary<int,string>();
 
+        Dictionary<string, List<string>> macros = new Dictionary<string, List<string>>();
+
+        Dictionary<string, string> equs = new Dictionary<string, string>();
 
         public delegate void MsgHandler(string msg);
         public event MsgHandler Msg;
@@ -77,7 +81,9 @@ namespace z80assemble
             //commandtable = new commands
             //{ "ADC A,(HL)",	7,	2,	"8E",	1};
 
-            string[] lines = System.IO.File.ReadAllLines("commands.txt");
+            string myExeDir = (new FileInfo(System.Reflection.Assembly.GetEntryAssembly().Location)).Directory.ToString();
+
+            string[] lines = System.IO.File.ReadAllLines(myExeDir + Path.DirectorySeparatorChar + "commands.txt");
 
             int invalidcount = 0;
             foreach (string line in lines)
@@ -128,6 +134,8 @@ namespace z80assemble
             labels = new Dictionary<string, int>();
             linkrequiredat = new Dictionary<int, string>();
             defines = new Dictionary<string, int>();
+            macros = new Dictionary<string, List<string>>();
+            equs = new Dictionary<string, string>();
 
             //resetallbytes
 
@@ -171,10 +179,10 @@ namespace z80assemble
                 return true;
             }
 
-            match = Regex.Match(data, @"^B([0-1]+)$"); //FIX ME IGNORE CASE
+            match = Regex.Match(data, @"^([01]*)B+$"); //FIX ME IGNORE CASE
             if (match.Success)
             {
-                num = Convert.ToInt16(match.Groups[1].Value, 16);
+                num = Convert.ToInt16(match.Groups[1].Value, 2);
                 return true;
             }
 
@@ -336,6 +344,22 @@ namespace z80assemble
 
             }
 
+            foreach (KeyValuePair<string,string> kvp in equs)
+            {
+                if (kvp.Key == xarg)
+                {
+                    if (indirect)
+                    {
+                        return (validatearg("("+kvp.Value+")", out imvalue));
+                    }
+                    else
+                    {
+                        return (validatearg(kvp.Value, out imvalue));
+                    }
+
+                }
+            }
+
             return argtype.INVALID;
         }
 
@@ -405,14 +429,20 @@ namespace z80assemble
             if (command == "ORG")
             {
                 org = val1;
-                return "";
+                return ""; //NO opcodes
             }
 
             if (command == "END")
             {
                 //Signal file is finished
-             
-                return "";
+
+                return ""; //NO opcodes
+            }
+
+            if (command == "PAGE")
+            {
+                //Do something
+                return ""; //NO opcodes
             }
 
             //fudge testing fixme remove later
@@ -645,6 +675,12 @@ namespace z80assemble
                         return valueinsert(c.opcode, val1, 'n');
                     }
 
+                    if (at2 == argtype.LABEL)
+                    {
+                        //we need to generate a place holder here somehow and update real address with linker
+                        return generateplaceholder(arg2, c.opcode);
+                    }
+
 
                     Exception ex2 = new Exception("Failed to generate opcode");
                     throw (ex2);
@@ -766,6 +802,17 @@ namespace z80assemble
                 linkrequiredat.Add(org + length, label);
                 Console.WriteLine(String.Format("Link required at address {0} for label {1}",org+length,label));
                 return(string.Format("{0} 00 00",match.Groups[1].Value));
+            }
+            
+            //FIXME we need to let this know its an 8bit insert not a 16bit!!!
+            //Currently linker will just do a 16bit replace
+            Match match2 = Regex.Match(opstring, @"^([A-Z0-9]*) oo$");
+            if (match2.Success)
+            {
+                int length = match.Groups[1].Value.Length / 2;
+                linkrequiredat.Add(org + length, label);
+                Console.WriteLine(String.Format("Link required at address {0} for label {1}", org + length, label));
+                return (string.Format("{0} 00", match2.Groups[1].Value));
             }
 
             Exception e = new Exception("Error matching label opcodes");
@@ -889,7 +936,7 @@ namespace z80assemble
             {
                 string line = linex;
 
-                Match match2 = Regex.Match(line, @"^[ \t]+\.([A-Za-z0-9]+)[ \t]+([A-Za-z0-9]*)[ \t\r]*");
+                Match match2 = Regex.Match(line, @"^[ \t]+\.([A-Za-z0-9]+)[ \t]+([A-Za-z0-9.]*)[ \t\r]*");
                 if (match2.Success)
                 {
                     //textBox2.AppendText("Found Preprocessor " + match2.Groups[1].Value + " => " + match2.Groups[2].Value + "\r\n");
@@ -899,6 +946,17 @@ namespace z80assemble
                     if (directive.ToUpper() == "EXTERN")
                     {
                         pushextern(value);
+                    }
+
+                    if (directive.ToUpper() == "INCLUDE")
+                    {                
+                        //load file in value and recurse,
+
+                        StreamReader sr = new StreamReader("files"+Path.DirectorySeparatorChar+value);
+                        string data = sr.ReadToEnd();
+                        parse(data);
+
+                        //pushextern(value);
                     }
 
                 }
@@ -914,14 +972,18 @@ namespace z80assemble
                     line = rest;
                 }
 
+              
+
             }
         }
 
         public void parse(string code)
         {
             // Do stuff
+            bool macro = false;
+            string currentmacro = "";
 
-            reset();
+           // reset();
            // textBox2.Clear();
 
             char[] delim = new char[] { '\n' };
@@ -966,6 +1028,44 @@ namespace z80assemble
                     continue;
                 }
 
+                if (macro == true)
+                {
+                    Match matcha = Regex.Match(line, @"^[ \t]+ENDM[ \n\r\t]*");
+                    if (matcha.Success)
+                    {
+                        sendmsg("END macro ");
+                        macro = false;
+                        continue;
+                    }
+                    else
+                    {
+                        //save this line in the current macro
+                        macros[currentmacro].Add(line);
+                        continue;
+                    }
+                }
+
+                Match macromatch = Regex.Match(line, @"^([A-Za-z0-9_$-]+)[ \t]*MACRO[ \n\r\t]*");
+                if (macromatch.Success)
+                {
+                    currentmacro = macromatch.Groups[1].Value;
+                    sendmsg("Found macro " + currentmacro);
+                    macro = true;
+                    macros[currentmacro] = new List<string>();
+
+                    continue;
+                }
+
+                {
+
+                    Match equmatch = Regex.Match(line, @"^([A-Za-z0-9_$-]+)[ \t]*.equ[ \t]+([A-Za-z0-9]*)");
+                    if (equmatch.Success)
+                    {
+                        equs[equmatch.Groups[1].Value] = equmatch.Groups[2].Value;
+                        sendmsg(String.Format("Found equ {0} -> {1} ",equmatch.Groups[1].Value,equmatch.Groups[2].Value));
+                        continue;
+                    }
+                }
 
                 // Labels
                 Match match = Regex.Match(line, @"^([A-Za-z0-9]+):(.*)");
@@ -973,18 +1073,18 @@ namespace z80assemble
                 {
                     string key = match.Groups[1].Value;
                     string rest = match.Groups[2].Value;
-                   // textBox2.AppendText("Found lable " + key + "\r\n");
+                    // textBox2.AppendText("Found lable " + key + "\r\n");
                     fixlabel(key);
                     line = rest;
                 }
 
-                Match match3 = Regex.Match(line, @"^[ \t]+([A-Za-z0-9]+)[ \t]*(.*)(;*.*)");
+                Match match3 = Regex.Match(line, @"^[ \t]+([A-Za-z0-9]+)[ \t]*(.*)[ \n\r\t]*(;*.*)");
                 if (match3.Success)
                 {
                     string arg1 = null;
                     string arg2 = null;
                     string command = match3.Groups[1].Value;
-                   // textBox2.AppendText("Found command " + command + " -- > ");
+                    // textBox2.AppendText("Found command " + command + " -- > ");
                     // Now break down that command into 0,1 or 2 paramater
 
                     if (match3.Groups[2].Value != "")
@@ -1002,7 +1102,7 @@ namespace z80assemble
                             Match match4 = Regex.Match(p, @"[ \t]*([()a-zA-Z0-9+]+)[ \t]*[, ]*[ \t]*([()a-zA-Z0-9+']+)[ \t\r]*");
                             if (match4.Success)
                             {
-                               // textBox2.AppendText(" arguments \"" + match4.Groups[1].Value + "\" -- \"" + match4.Groups[2].Value + "\"");
+                                // textBox2.AppendText(" arguments \"" + match4.Groups[1].Value + "\" -- \"" + match4.Groups[2].Value + "\"");
                                 arg1 = match4.Groups[1].Value;
                                 arg2 = match4.Groups[2].Value;
                             }
@@ -1015,7 +1115,7 @@ namespace z80assemble
                     }
                     catch (Exception ex)
                     {
-                          
+
                         sendmsg(ex.Message + "\nOn line " + lineno.ToString() + "\n" + line);
                         break;
                     }

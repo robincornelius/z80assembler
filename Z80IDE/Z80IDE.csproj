@@ -57,6 +57,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BuildManager.cs" />
     <Compile Include="DummyOutputWindow.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -81,9 +82,21 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="NewSolution.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="NewSolution.Designer.cs">
+      <DependentUpon>NewSolution.cs</DependentUpon>
+    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Solution.cs" />
+    <Compile Include="SolutionSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SolutionSettings.Designer.cs">
+      <DependentUpon>SolutionSettings.cs</DependentUpon>
+    </Compile>
     <Compile Include="ToolWindow.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -102,6 +115,9 @@
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="NewSolution.resx">
+      <DependentUpon>NewSolution.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -112,6 +128,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <EmbeddedResource Include="SolutionSettings.resx">
+      <DependentUpon>SolutionSettings.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="ToolWindow.resx">
       <DependentUpon>ToolWindow.cs</DependentUpon>
     </EmbeddedResource>
