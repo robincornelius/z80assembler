@@ -73,9 +73,9 @@ namespace Z80IDE
             foreach (IDockContent d in dockPanel.Documents)
             {
                 //Only one solution supported at a time currently
-                if (d.GetType() == typeof(SolutionSettings) && e.rootnode == true)
+                if (d.GetType() == typeof(NewSolution) && e.rootnode == true)
                 {
-                    SolutionSettings ss = (SolutionSettings)d;
+                    NewSolution ss = (NewSolution)d;
                     ss.Show();
                     return;
                 }
@@ -94,7 +94,7 @@ namespace Z80IDE
 
            if(e.rootnode==true)
            {
-                SolutionSettings ss2 = new SolutionSettings();
+                NewSolution ss2 = new NewSolution(solution);
                 ss2.MdiParent = this;
                 ss2.DockPanel = this.dockPanel;
                 ss2.Show();

@@ -29,8 +29,9 @@ namespace Z80IDE
 
         public void build()
         {
-           
-            
+
+            assembler.ramstart = solution.details.ramstart;
+
             assembler.Msg += new z80assembler.MsgHandler(assembler_Msg);
 
             assembler.reset();

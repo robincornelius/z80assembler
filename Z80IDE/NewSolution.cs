@@ -7,25 +7,43 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
+using WeifenLuo.WinFormsUI.Docking;
+using DockSample;
 
 namespace Z80IDE
 {
-    public partial class NewSolution : Form
+    public partial class NewSolution :  DockContent
     {
-        Solution sol = new Solution();
 
-        public NewSolution()
+        Solution sol;
+
+        public NewSolution(Solution sol=null)
         {
             InitializeComponent();
+
+            if (sol == null)
+            {
+                this.sol = new Solution();
+
+            }
+            else
+            {
+                this.sol = sol;
+                textBox_solutionname.Text = sol.details.name;
+                textBox_solutionroot.Text = sol.details.basefolder;
+                textBox_ramstart.Text = sol.details.ramstart.ToString();
+            }
         }
 
         private void button_ok_Click(object sender, EventArgs e)
         {
 
-            sol.details.name = textBox_solutionname.Text;
-            sol.details.basefolder = textBox_solutionroot.Text + System.IO.Path.DirectorySeparatorChar + sol.details.name;
+           sol.details.name = textBox_solutionname.Text;
+           sol.details.basefolder = textBox_solutionroot.Text + System.IO.Path.DirectorySeparatorChar + sol.details.name;
            sol.details.filefolder = sol.details.basefolder + System.IO.Path.DirectorySeparatorChar + "files";
            sol.details.name = textBox_solutionname.Text;
+
+           sol.details.ramstart = int.Parse(textBox_ramstart.Text);
 
            if (Directory.Exists(sol.details.basefolder))
            {

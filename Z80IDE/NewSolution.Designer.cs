@@ -35,6 +35,8 @@
             this.textBox_solutionname = new System.Windows.Forms.TextBox();
             this.button_ok = new System.Windows.Forms.Button();
             this.button_cancel = new System.Windows.Forms.Button();
+            this.textBox_ramstart = new System.Windows.Forms.TextBox();
+            this.label3 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // button_changefolder
@@ -99,11 +101,30 @@
             this.button_cancel.UseVisualStyleBackColor = true;
             this.button_cancel.Click += new System.EventHandler(this.button_cancel_Click);
             // 
+            // textBox_ramstart
+            // 
+            this.textBox_ramstart.Location = new System.Drawing.Point(126, 103);
+            this.textBox_ramstart.Name = "textBox_ramstart";
+            this.textBox_ramstart.Size = new System.Drawing.Size(129, 20);
+            this.textBox_ramstart.TabIndex = 10;
+            this.textBox_ramstart.Text = "16384";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(24, 110);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(52, 13);
+            this.label3.TabIndex = 11;
+            this.label3.Text = "Ram start";
+            // 
             // NewSolution
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(770, 223);
+            this.Controls.Add(this.label3);
+            this.Controls.Add(this.textBox_ramstart);
             this.Controls.Add(this.button_cancel);
             this.Controls.Add(this.button_ok);
             this.Controls.Add(this.textBox_solutionname);
@@ -111,6 +132,7 @@
             this.Controls.Add(this.button_changefolder);
             this.Controls.Add(this.textBox_solutionroot);
             this.Controls.Add(this.label1);
+            this.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Name = "NewSolution";
             this.Text = "NewSolution";
             this.ResumeLayout(false);
@@ -127,5 +149,7 @@
         private System.Windows.Forms.TextBox textBox_solutionname;
         private System.Windows.Forms.Button button_ok;
         private System.Windows.Forms.Button button_cancel;
+        private System.Windows.Forms.TextBox textBox_ramstart;
+        private System.Windows.Forms.Label label3;
     }
 }

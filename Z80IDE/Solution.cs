@@ -33,6 +33,7 @@ namespace Z80IDE
         public string filefolder;
         [XmlArray(ElementName = "files", IsNullable = true)]
         public List<file> files = new List<file>();
+        public int ramstart;
     }
 
     public class Solution

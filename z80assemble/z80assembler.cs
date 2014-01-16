@@ -20,6 +20,7 @@ namespace z80assemble
             IMMEDIATE, // 5
             INDIRECTIMMEDIATE, //(5) 
             LABEL, // variable
+            INDIRECTLABEL,
             EXLABEL, // variable
             INDIRECTOFFSET, //(ix+5)
         }
@@ -58,6 +59,9 @@ namespace z80assemble
     public class z80assembler
     {
         int org = 0;
+        public int ramstart = 0;
+        int ramptr = 0;
+
         public Dictionary<int, byte> bytes;
         Dictionary<string, int> labels = new Dictionary<string, int>();
         Dictionary<string, int> defines = new Dictionary<string, int>();
@@ -311,10 +315,19 @@ namespace z80assemble
 
             foreach(KeyValuePair<string, int> kvp in labels)
             {
-                if (kvp.Key == arg)
+                if (kvp.Key == xarg)
                 {
-                    imvalue = 0; // We don't know the address yet we do this at link time
-                    return argtype.LABEL;
+                    if (indirect)
+                    {
+                        imvalue = 0; // We don't know the address yet we do this at link time
+                        return argtype.INDIRECTLABEL;
+                    }
+                    else
+                    {
+                        imvalue = 0; // We don't know the address yet we do this at link time
+                        return argtype.LABEL;
+                    }
+                    
                 }
             }
 
@@ -361,6 +374,15 @@ namespace z80assemble
             }
 
             return argtype.INVALID;
+        }
+
+        public void pushbytes(byte[] pushbytes)
+        {
+            foreach(byte b in pushbytes)
+            {
+                bytes[org] = b;
+                org++;
+            }
         }
 
         public void pushcommand(string command, string arg1, string arg2)
@@ -485,8 +507,8 @@ namespace z80assemble
 
 
                 if (c.cmd == command)
-                
-                if((at1 == c.at1 ||(at1 == argtype.LABEL)) && (at2 == c.at2 ||(at2 == argtype.LABEL)))
+
+                    if ((at1 == c.at1 || (at1 == argtype.LABEL) || (at1 == argtype.INDIRECTLABEL)) && (at2 == c.at2 || (at2 == argtype.LABEL)) || (at2 == argtype.INDIRECTLABEL))
                 {
                     // If we have argtype reg make sure we are on the correct reg
                     if (at1 == argtype.REG || at1 == argtype.INDIRECTREG)
@@ -805,7 +827,7 @@ namespace z80assemble
             }
             
             //FIXME we need to let this know its an 8bit insert not a 16bit!!!
-            //Currently linker will just do a 16bit replace
+            //Currently linker will just do a 16b
             Match match2 = Regex.Match(opstring, @"^([A-Z0-9]*) oo$");
             if (match2.Success)
             {
@@ -897,6 +919,12 @@ namespace z80assemble
             labels.Add(label, org);
         }
 
+        public void fixram(string label,int size)
+        {
+            labels[label] = ramptr;
+            ramptr += size;
+        }
+
         //must be reset per file
         public void pushextern(string label)
         {
@@ -980,6 +1008,7 @@ namespace z80assemble
         public void parse(string code)
         {
             // Do stuff
+            bool codesegment=true;
             bool macro = false;
             string currentmacro = "";
 
@@ -1056,13 +1085,74 @@ namespace z80assemble
                     continue;
                 }
 
+
+                //Directives again
+                {
+                    Match match2 = Regex.Match(line, @"^[ \t]+\.([A-Za-z0-9]+)[ \t]+([A-Za-z0-9.]*)[ \t\r]*");
+                    if (match2.Success)
+                    {
+                        //textBox2.AppendText("Found Preprocessor " + match2.Groups[1].Value + " => " + match2.Groups[2].Value + "\r\n");
+                        string directive = match2.Groups[1].Value;
+                        string value = match2.Groups[2].Value;
+
+                        if (directive.ToUpper() == "CODE")
+                        {
+                            codesegment = true;
+                        }
+
+                        if (directive.ToUpper() == "DATA")
+                        {
+                            codesegment = false;
+                        }
+
+
+                        //word size data
+                        if (directive.ToUpper() == "DW")
+                        {
+                            if (codesegment == true)
+                            {
+                                int val;
+                                argtype at = validatearg(value, out val);
+
+                                if (at == argtype.IMMEDIATE)
+                                {
+                                    byte[] data = new byte[2];
+                                    data[0] = (byte)(val >> 8);
+                                    data[1] = (byte)(val & 0xff);
+
+                                    //OK its good
+                                    pushbytes(data);
+                                }
+
+
+                                if (at == argtype.EXLABEL || at== argtype.LABEL)
+                                {
+                                    byte[] data = new byte[2];
+                                    data[0] = 0;
+                                    data[1] = 0;
+                                    linkrequiredat.Add(org, value);
+                                    pushbytes(data);
+                                }
+
+
+
+                                else
+                                {
+                                    //WTF was that,, parse error;
+                                }
+
+                            }
+                        }
+                    }
+                }
+
                 {
 
                     Match equmatch = Regex.Match(line, @"^([A-Za-z0-9_$-]+)[ \t]*.equ[ \t]+([A-Za-z0-9]*)");
                     if (equmatch.Success)
                     {
                         equs[equmatch.Groups[1].Value] = equmatch.Groups[2].Value;
-                        sendmsg(String.Format("Found equ {0} -> {1} ",equmatch.Groups[1].Value,equmatch.Groups[2].Value));
+                        sendmsg(String.Format("Found equ {0} -> {1} ", equmatch.Groups[1].Value, equmatch.Groups[2].Value));
                         continue;
                     }
                 }
