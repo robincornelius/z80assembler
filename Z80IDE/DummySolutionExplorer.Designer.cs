@@ -156,6 +156,8 @@ namespace DockSample
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             this.removeFromSolutionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.assembleFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -443,16 +445,33 @@ namespace DockSample
             // removeFromSolutionToolStripMenuItem
             // 
             this.removeFromSolutionToolStripMenuItem.Name = "removeFromSolutionToolStripMenuItem";
-            this.removeFromSolutionToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
+            this.removeFromSolutionToolStripMenuItem.Size = new System.Drawing.Size(192, 22);
             this.removeFromSolutionToolStripMenuItem.Text = "Remove from solution";
             this.removeFromSolutionToolStripMenuItem.Click += new System.EventHandler(this.removeFromSolutionToolStripMenuItem_Click);
             // 
             // contextMenuStrip1
             // 
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.assembleFileToolStripMenuItem,
+            this.toolStripSeparator1,
             this.removeFromSolutionToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(190, 48);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(193, 76);
+            // 
+            // assembleFileToolStripMenuItem
+            // 
+            this.assembleFileToolStripMenuItem.Checked = true;
+            this.assembleFileToolStripMenuItem.CheckOnClick = true;
+            this.assembleFileToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.assembleFileToolStripMenuItem.Name = "assembleFileToolStripMenuItem";
+            this.assembleFileToolStripMenuItem.Size = new System.Drawing.Size(192, 22);
+            this.assembleFileToolStripMenuItem.Text = "Assemble file";
+            this.assembleFileToolStripMenuItem.Click += new System.EventHandler(this.assembleFileToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(189, 6);
             // 
             // DummySolutionExplorer
             // 
@@ -480,5 +499,7 @@ namespace DockSample
         private System.Windows.Forms.ImageList imageList1;
         private System.Windows.Forms.ToolStripMenuItem removeFromSolutionToolStripMenuItem;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+        private System.Windows.Forms.ToolStripMenuItem assembleFileToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
     }
 }

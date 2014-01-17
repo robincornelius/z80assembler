@@ -25,7 +25,7 @@ namespace IntelHex
 
         }
 
-        public int[] rom = new int[0x10000];
+        public byte[] rom = new byte[0xFFFF];
 
         public void save(string filename)
         {

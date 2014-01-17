@@ -102,14 +102,14 @@ namespace z80assemble
 
                 string line = macrolines[pos];
                 pos++;
-
+        
                 for (int argi = 0; argi < args.Count; argi++)
                 {
-                    return line.Replace(args[argi],inargs[argi]);
+                    line=line.Replace(args[argi],inargs[argi]);
                 }
-            }
 
-           
+                return line;
+            }
 
             return "";
 
@@ -134,8 +134,7 @@ namespace z80assemble
             }
 
             this.inargs=inargs;
-            pos = 0;
-        
+            pos = 0;        
         }
 
     }
@@ -159,6 +158,8 @@ namespace z80assemble
 
         public delegate void MsgHandler(string msg);
         public event MsgHandler Msg;
+
+        public string basepath;
 
 
         public void loadcommands()
@@ -215,20 +216,24 @@ namespace z80assemble
 
         }
 
+        public void partialreset()
+        {
+            labels = new Dictionary<string, int>();
+            lineno = 0;
+        }
+
         public void reset()
         {
+            partialreset();
+
             org = 0;
             bytes = new Dictionary<int, byte>();
-            labels = new Dictionary<string, int>();
             linkrequiredat = new Dictionary<int, linkrequiredatdata>();
             defines = new Dictionary<string, int>();
             macros = new Dictionary<string, macro>();
             equs = new Dictionary<string, string>();
 
             ramptr = ramstart;
-
-            //resetallbytes
-
         }
 
         public string[] validregs = { "A", "B", "C", "D", "E", "H", "L",
@@ -555,7 +560,17 @@ namespace z80assemble
             // (variable) - Indirect variable
 
             //determine argtypes
-         
+
+            if (arg1 == "CHEN" && command=="BIT")
+            {
+                int x = 0;
+                
+            }
+
+
+            if (ismacro(command))
+                return "MACRO";
+
             int val1;
             int val2;
             argtype at1 = validatearg(arg1,out val1,false);
@@ -760,7 +775,7 @@ namespace z80assemble
                             }
 
                             //FIX ME not coping with opcode = "CB 40+8*b+r" as we need to add on r
-                            return  multiplyoffset(opcode, arg1);
+                            return  multiplyoffset(opcode, val1.ToString());
 
                         }
 
@@ -866,19 +881,24 @@ namespace z80assemble
 
             }
 
-          //Is it a macro?
-          foreach(KeyValuePair<string, macro> kvp in macros)
-          {
-              if (kvp.Key == command)
-              {
-                  //return this special token so the the parent function knows to process the macro.
-                  return "MACRO";
-              }
-          }
-
           Exception ex = new Exception("Failed to find OP code");
           throw ex;
 
+        }
+
+        bool ismacro(string command)
+        {
+            //Is it a macro?
+            foreach (KeyValuePair<string, macro> kvp in macros)
+            {
+                if (kvp.Key == command)
+                {
+                    //return this special token so the the parent function knows to process the macro.
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public  List<string> processmacro(string line)
@@ -1149,6 +1169,7 @@ namespace z80assemble
             //TODO at the end of the file remove all non externs
             try
             {
+                List<int> completed = new List<int>();
                 foreach (KeyValuePair<int, linkrequiredatdata> kvp in linkrequiredat)
                 {
                     int address = kvp.Key;
@@ -1190,6 +1211,13 @@ namespace z80assemble
                         }
                     }
 
+                    completed.Add(address);
+
+                }
+
+                foreach (int a in completed)
+                {
+                    linkrequiredat.Remove(a);
                 }
 
             }
@@ -1198,17 +1226,10 @@ namespace z80assemble
                 sendmsg("Link error " + e.Message);
 
             }
+        }
 
-            Console.WriteLine("Hex dump ---->");
-
-
-            foreach (KeyValuePair<int,byte> b in bytes)
-            {
-                Console.Write(string.Format("{0:x2} ", b.Value));
-            }
-
-            Console.WriteLine("\n");
-
+        public void finallink()
+        {
 
         }
 
@@ -1236,7 +1257,7 @@ namespace z80assemble
                         StreamReader sr;
                         try
                         {
-                            sr = new StreamReader("files" + Path.DirectorySeparatorChar + value);
+                            sr = new StreamReader(basepath+Path.DirectorySeparatorChar+"files" + Path.DirectorySeparatorChar + value);
                         }
                         catch (Exception e)
                         {
@@ -1330,7 +1351,7 @@ namespace z80assemble
                 Match matcha = Regex.Match(line, @"^[ \t]+ENDM[ \n\r\t]*");
                 if (matcha.Success)
                 {
-                    sendmsg("END macro ");
+                    //sendmsg("END macro ");
                     macro = false;
                     return;
                 }
@@ -1348,7 +1369,7 @@ namespace z80assemble
                 currentmacro = macromatch.Groups[1].Value;
                 string args = macromatch.Groups[2].Value;
                 args=args.Trim();
-                sendmsg("Found macro " + currentmacro);
+                //sendmsg("Found macro " + currentmacro);
                 macro = true;
 
                 string[] arargs = args.Split(new char[] { ',' });
@@ -1496,7 +1517,7 @@ namespace z80assemble
                 if (equmatch.Success)
                 {
                     equs[equmatch.Groups[1].Value] = equmatch.Groups[2].Value;
-                    sendmsg(String.Format("Found equ {0} -> {1} ", equmatch.Groups[1].Value, equmatch.Groups[2].Value));
+                    //sendmsg(String.Format("Found equ {0} -> {1} ", equmatch.Groups[1].Value, equmatch.Groups[2].Value));
                     return;
                 }
             }
@@ -1539,7 +1560,7 @@ namespace z80assemble
                 catch (Exception ex)
                 {
 
-                    sendmsg(ex.Message + "\nOn line " + lineno.ToString() + "\n" + line);
+                    sendmsg(ex.Message + " On line " + lineno.ToString() + "\n" + line);
                     return;
                 }
                 //textBox2.AppendText("\r\n");
@@ -1573,6 +1594,8 @@ namespace z80assemble
            //pass 1 just gets any equs/labels etc in current file so they are defined if used before they 
            //are defined.
            pass1(lines);
+
+           lineno = 0;
 
            foreach (string linex in lines)
            {

@@ -16,6 +16,7 @@ namespace Z80IDE
 
         public delegate void EditorClosingHandler(object sender, EventArgs e);
         public event EditorClosingHandler EditorClosing;
+        bool dirty = false;
 
         public String filename;
         public EditorWindow(String name)
@@ -25,6 +26,13 @@ namespace Z80IDE
             filename = name;
 
             this.FormClosing += new FormClosingEventHandler(EditorWindow_FormClosing);
+
+            fastColoredTextBox1.TextChanged += new EventHandler<FastColoredTextBoxNS.TextChangedEventArgs>(fastColoredTextBox1_TextChanged);
+        }
+
+        void fastColoredTextBox1_TextChanged(object sender, FastColoredTextBoxNS.TextChangedEventArgs e)
+        {
+            setdirty();
         }
 
         void EditorWindow_FormClosing(object sender, FormClosingEventArgs e)
@@ -40,7 +48,30 @@ namespace Z80IDE
         public void settext(string data)
         {
             this.fastColoredTextBox1.Text=data;
-
+            setclean();
         }
+
+        public string gettext()
+        {
+            return fastColoredTextBox1.Text;
+        }
+
+        public void setdirty()
+        {
+            this.TabText = "*" + filename;
+            dirty = true;
+        }
+
+        public void setclean()
+        {
+            this.TabText = filename;
+            dirty = false;
+        }
+
+        public bool isdirty()
+        {
+            return dirty;
+        }
+
     }
 }

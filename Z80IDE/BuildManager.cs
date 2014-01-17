@@ -5,7 +5,7 @@ using System.Text;
 using z80assemble;
 using Z80IDE;
 using DockSample;
-
+using IntelHex;
 
 namespace Z80IDE
 {
@@ -30,6 +30,9 @@ namespace Z80IDE
         public void build()
         {
 
+            assembler_Msg(" -------- BUILD STARTING -------------");
+
+            assembler.basepath = solution.getbasepath();
             //assembler.ramstart = solution.details.ramstart;
             assembler.ramstart = 0x4000;
 
@@ -40,12 +43,20 @@ namespace Z80IDE
 
             foreach (file f in solution.details.files)
             {
-                assembler_Msg("\r\n Staring file " + f.name + " .......\r\n");
-                assembler.reset();
-                assembler.parse(solution.loadfile(f.name));
+                if (f.assemblefile == true)
+                {
+                    assembler_Msg("\r\n Staring file " + f.name);
+                    assembler.partialreset();
+                    assembler.parse(solution.loadfile(f.name));
+                    assembler.link(); // This is the per file link
+                }
             }
 
-            assembler.link();
+            assembler_Msg(" \r\n-------- LINKING -------------\r\n ");
+
+            //assembler.finallink(); // This is the per file link
+
+            assembler_Msg("\r\n --------DONE -------------");
 
         }
 
@@ -71,6 +82,19 @@ namespace Z80IDE
             }
 
             return b;
+           
+        }
+
+        public void saveIntelHex(string filename)
+        {
+            IntelHex.IntelHex ih = new IntelHex.IntelHex();
+
+            foreach(KeyValuePair<int,byte> kvp in assembler.bytes)
+            {
+                 ih.rom[kvp.Key] = kvp.Value;
+            }
+
+            ih.save(filename);
            
         }
     }

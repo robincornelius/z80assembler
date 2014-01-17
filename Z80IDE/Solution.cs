@@ -24,6 +24,7 @@ namespace Z80IDE
 
         public String name;
         public String path;
+        public bool assemblefile = true;
     }
 
     public class solutiondetails
@@ -34,6 +35,7 @@ namespace Z80IDE
         [XmlArray(ElementName = "files", IsNullable = true)]
         public List<file> files = new List<file>();
         public int ramstart;
+     
     }
 
     public class Solution
@@ -44,6 +46,8 @@ namespace Z80IDE
         //public List<file> files = new List<file>();
 
         public solutiondetails details = new solutiondetails();
+
+        public Dictionary<string, EditorWindow> ewlink = new Dictionary<string, EditorWindow>();
 
         public bool isDirty = false;
         //public string name;
@@ -62,7 +66,7 @@ namespace Z80IDE
                 Changed(this, e);
         }
 
-        public bool addfile(string pathname,bool copy=true)
+        public bool addfile(string pathname,bool copy=true,EditorWindow ew=null)
         {
           
          
@@ -85,6 +89,11 @@ namespace Z80IDE
             solutionchanged();
 
             isDirty = true;
+
+            if (ew != null)
+            {
+                ewlink.Add(filename, ew);
+            }
 
             return true;
 
@@ -110,6 +119,12 @@ namespace Z80IDE
                 solutionchanged();
             }
 
+            if (ewlink.ContainsKey(name))
+            {
+                ewlink[name].Close();
+                ewlink.Remove(name);
+            }
+
             isDirty = true;
 
         }
@@ -126,13 +141,33 @@ namespace Z80IDE
             return false;
         }
 
-        public string loadfile(string name)
+        public string loadfile(string name,EditorWindow ew=null)
         {
+
             StreamReader sr = new StreamReader(details.filefolder + System.IO.Path.DirectorySeparatorChar + name);
             string data = sr.ReadToEnd();
             sr.Close();
 
+            if (ew != null)
+            {
+                ew.settext(data);
+                ewlink.Add(name, ew);
+            }
+
             return data;
+
+        }
+
+        public void savefile(string name)
+        {
+            if (ewlink.ContainsKey(name))
+            {
+                string data = ewlink[name].gettext();
+                StreamWriter sw = new StreamWriter(details.filefolder + System.IO.Path.DirectorySeparatorChar + name);
+                sw.Write(data);
+                sw.Close();
+                ewlink[name].setclean();
+            }
 
         }
 
@@ -178,7 +213,62 @@ namespace Z80IDE
             solutionchanged();
 
         }
-       
+
+        public bool isassemblyrequired(string filename)
+        {
+            foreach (file f in details.files)
+            {
+                if (f.name == filename)
+                {
+                    return f.assemblefile;
+                }
+            }
+
+            return false;
+
+        }
+
+
+        public void setassemblyrequired(string filename,bool required)
+        {
+            foreach (file f in details.files)
+            {
+                if (f.name == filename)
+                {
+                    f.assemblefile = required;
+                    return;
+                }
+            }
+
+
+        }
+
+        public string  getbasepath()
+        {
+            return details.basefolder;
+        }
+
+        public void savedirtyfiles()
+        {
+
+            foreach(KeyValuePair<string, EditorWindow> kvp in ewlink)
+            {
+                if (kvp.Value.isdirty() == true)
+                {
+                    savefile(kvp.Key);
+                    kvp.Value.setclean();
+                }
+            }
+        }
+
+        public void unlink(EditorWindow ew)
+        {
+            if (ewlink.ContainsKey(ew.filename))
+            {
+                ewlink.Remove(ew.filename);
+            }
+
+        }
 
     }
 }

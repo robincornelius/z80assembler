@@ -38,6 +38,11 @@ namespace DockSample
             {
                 selected = e.Node;
 
+              
+                ((ToolStripMenuItem)(contextMenuStrip1.Items[0])).Checked = solution.isassemblyrequired(selected.Text);
+                
+          
+
                 contextMenuStrip1.Show(treeView1,e.Location);
             }
         }
@@ -73,7 +78,12 @@ namespace DockSample
 
             foreach (file f in solution.details.files)
             {
-                TreeNode child = new TreeNode(f.name, 7, 7);
+                int type = 7;
+
+                if (f.assemblefile == false)
+                    type = 6;
+
+                TreeNode child = new TreeNode(f.name, type, type);
                 child.Name = f.name;
                 parent.Nodes.Add(child);
 
@@ -92,6 +102,28 @@ namespace DockSample
                 solution.removefile(selected.Name);
             }
 
+        }
+
+        private void assembleFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+          
+            ToolStripMenuItem m = (ToolStripMenuItem) sender;
+            bool ischecked= ((ToolStripMenuItem)(contextMenuStrip1.Items[0])).Checked;
+            solution.setassemblyrequired(selected.Text, ischecked);
+
+            if (ischecked == true)
+            {
+                selected.ImageIndex = 7;
+                selected.StateImageIndex = 7;
+
+            }
+            else
+            {
+                selected.ImageIndex = 6;
+                selected.StateImageIndex = 6;
+            }
+
+            treeView1.Update();
         }
     }
 

@@ -22,6 +22,7 @@ namespace Z80IDE
         private DummyOutputWindow m_outputWindow = new DummyOutputWindow();
         private Dictionary<string, EditorWindow> editors = new Dictionary<string, EditorWindow>();
         z80assembler assembler;
+        BuildManager bm;
 
         private List<string> _mru = new List<string>();
 
@@ -167,11 +168,13 @@ namespace Z80IDE
 
         public void loadfile(string name)
         {
-            string data = solution.loadfile(name);
+
             EditorWindow ew = new EditorWindow(name);
+            string data = solution.loadfile(name,ew);
+            
             ew.EditorClosing += new EditorWindow.EditorClosingHandler(ew_Closing);
 
-            ew.settext(data);
+           
             ew.MdiParent = this;
             ew.DockPanel = this.dockPanel;
             ew.Show();
@@ -186,17 +189,34 @@ namespace Z80IDE
 
         void ew_Closing(object sender, EventArgs e)
         {
+
             EditorWindow ew = (EditorWindow)sender;
             editors.Remove(ew.filename);
+            solution.unlink(ew);
+
+
             ew.Dispose();
 
         }
 
         private void toolStripButtonBuild_Click(object sender, EventArgs e)
         {
+            build();
+        }
+
+        private void buildToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            build();
+        }
+
+        void build()
+        {
+
+            solution.savedirtyfiles();
+
             m_outputWindow.clear();
             m_outputWindow.appendmsg("Starting build");
-            BuildManager bm = new BuildManager(solution, m_outputWindow);
+            bm = new BuildManager(solution, m_outputWindow);
             bm.build();
 
             HexView hv = new HexView(bm.getoutput());
@@ -300,7 +320,7 @@ namespace Z80IDE
 
             ew.EditorClosing += new EditorWindow.EditorClosingHandler(ew_Closing);
             
-            solution.addfile(filename,false);
+            solution.addfile(filename,false,ew);
 
         }
 
@@ -321,6 +341,41 @@ namespace Z80IDE
             }     
 
         }
+
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+            if (dockPanel.ActiveDocument.GetType() == typeof(EditorWindow))
+            {
+                EditorWindow ew = (EditorWindow)dockPanel.ActiveDocument;
+                solution.savefile(ew.filename);
+                //ew.save();
+            }
+
+           
+
+        }
+
+        private void exportHEXToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+            if (bm == null)
+                return;
+
+            SaveFileDialog dialog = new SaveFileDialog();
+       
+                dialog.Filter = "Hex files (*.hex)|*.hex";
+                dialog.Title = "Save HEX file";
+
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    bm.saveIntelHex(dialog.FileName);
+                }     
+
+      
+
+        }
+
 
       
 

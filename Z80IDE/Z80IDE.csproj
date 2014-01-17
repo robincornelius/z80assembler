@@ -158,6 +158,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\IntelHex\IntelHex.csproj">
+      <Project>{9015282A-EE8A-418E-A5B8-2EAD2628634B}</Project>
+      <Name>IntelHex</Name>
+    </ProjectReference>
     <ProjectReference Include="..\z80assemble\z80assembler.csproj">
       <Project>{C3B58DAA-A630-4A3B-B0A1-85479F1847BD}</Project>
       <Name>z80assembler</Name>
