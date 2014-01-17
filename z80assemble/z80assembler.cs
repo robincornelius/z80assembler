@@ -70,6 +70,76 @@ namespace z80assemble
         public int org;
     }
 
+    public class macro
+    {
+        public string command;
+        public List<string> args = new List<string>();
+        public List<string> macrolines = new List<string>();
+        List<string> inargs;
+
+        int pos = 0;
+
+        public int getargcount()
+        {
+            return args.Count;
+        }
+
+        public void setargs(List<string> args)
+        {
+            this.args = args;
+        }
+
+        public void addline(string line)
+        {
+            macrolines.Add(line);
+        }
+
+        public string getnextline()
+        {
+            if (pos < macrolines.Count )
+            {
+               
+
+                string line = macrolines[pos];
+                pos++;
+
+                for (int argi = 0; argi < args.Count; argi++)
+                {
+                    return line.Replace(args[argi],inargs[argi]);
+                }
+            }
+
+           
+
+            return "";
+
+        }
+
+        public bool macrodone()
+        {
+            return pos >= macrolines.Count;
+        }
+
+        public void reset()
+        {
+            pos = 0;
+        }
+
+        public void subargs(List<string> inargs)
+        {
+            if (args.Count != inargs.Count)
+            {
+                Exception e = new Exception("Macro argument count mismatch");
+                throw (e);
+            }
+
+            this.inargs=inargs;
+            pos = 0;
+        
+        }
+
+    }
+
     public class z80assembler
     {
         int org = 0;
@@ -83,7 +153,7 @@ namespace z80assemble
         List<string> externs = new List<string>();
         Dictionary<int, linkrequiredatdata> linkrequiredat = new Dictionary<int, linkrequiredatdata>();
 
-        Dictionary<string, List<string>> macros = new Dictionary<string, List<string>>();
+        Dictionary<string, macro> macros = new Dictionary<string, macro>();
 
         Dictionary<string, string> equs = new Dictionary<string, string>();
 
@@ -152,7 +222,7 @@ namespace z80assemble
             labels = new Dictionary<string, int>();
             linkrequiredat = new Dictionary<int, linkrequiredatdata>();
             defines = new Dictionary<string, int>();
-            macros = new Dictionary<string, List<string>>();
+            macros = new Dictionary<string, macro>();
             equs = new Dictionary<string, string>();
 
             //resetallbytes
@@ -419,20 +489,33 @@ namespace z80assemble
             }
 
 
-            string codes = getopcodes(command, arg1, arg2);
+            string codes = getopcodes(command, arg1, arg2, line);
 
             if (codes == "")
                 return;
 
-            Console.WriteLine(String.Format("{0:x4} {1} \t\t {2}",org,line.Trim(),codes));
-
-            string[] bits = codes.Split(new char[]{' '});
-
-            foreach (string bit in bits)
+            if (codes == "MACRO")
             {
-                byte b = byte.Parse(bit,System.Globalization.NumberStyles.HexNumber);
-                bytes[org] = b;
-                org++;
+                List<string> macrolines=processmacro(line);
+                foreach (string s in macrolines)
+                {
+                    parseline(s);
+                }
+
+            }
+            else
+            {
+
+                Console.WriteLine(String.Format("{0:x4} {1} \t\t {2}", org, line.Trim(), codes));
+
+                string[] bits = codes.Split(new char[] { ' ' });
+
+                foreach (string bit in bits)
+                {
+                    byte b = byte.Parse(bit, System.Globalization.NumberStyles.HexNumber);
+                    bytes[org] = b;
+                    org++;
+                }
             }
 
  
@@ -445,7 +528,7 @@ namespace z80assemble
             return val1l << 8 | val1h;
         }
 
-        public string getopcodes(string command, string arg1, string arg2)
+        public string getopcodes(string command, string arg1, string arg2,string line="")
         {
             // We get a command and 0,1 or 2 args, if they are unused they are null
             // Args can be 
@@ -776,19 +859,59 @@ namespace z80assemble
             }
 
           //Is it a macro?
-          foreach(KeyValuePair<string, List<string>> kvp in macros)
+          foreach(KeyValuePair<string, macro> kvp in macros)
           {
               if (kvp.Key == command)
               {
                   //fixme not implemented
                   Console.WriteLine("WE NEED TO Insert macro " + command);
+
+                 // processmacro(line);
                   //fix me we should pass entire arg string to macros
-                  return "";
+                  return "MACRO";
               }
           }
 
           Exception ex = new Exception("Failed to find OP code");
           throw ex;
+
+        }
+
+        public  List<string> processmacro(string line)
+        {
+            line = line.Trim();
+            Match match = Regex.Match(line, @"^([A-Za-z0-9_$-]*)[ \t]+([A-Za-z0-9(),$_-]+)?");
+            if (match.Success)
+            {
+                string command = match.Groups[1].Value;
+                string allargs = match.Groups[2].Value;
+
+                string[] args = allargs.Split(new char[] { ',' });
+
+                foreach (KeyValuePair<string, macro> kvp in macros)
+                {
+                    if (kvp.Key == command)
+                    {
+                        //Build the macro inserting the args as defined
+                        macro m = kvp.Value;
+                        List<string> allargs2 = args.ToList();
+
+                        List<string> output = new List<string>();
+
+                        m.subargs(allargs2);
+
+                        while (!m.macrodone())
+                        {
+                            output.Add(m.getnextline());
+                        }
+
+                        return output;
+                    }
+                }
+
+            }
+
+            return null;
 
         }
 
@@ -1133,13 +1256,219 @@ namespace z80assemble
             }
         }
 
+        public void parseline(string line)
+        {
+
+            //comment line or null line
+            if (line.Length == 0)
+            {
+                //textBox2.AppendText("\r\n");
+               return;
+            }
+
+            if (line[0] == ';')
+            {
+                //textBox2.AppendText("**** \r\n");
+                return;
+            }
+
+            if (line[0] == '\r' || line[0] == '\n')
+            {
+                //textBox2.AppendText("\r\n");
+                return;
+            }
+
+            Match match5 = Regex.Match(line, @"^[ \t]+;.*");
+            if (match5.Success)
+            {
+                //textBox2.AppendText("\r\n");
+                return;
+            }
+
+            Match commentmatch = Regex.Match(line, @"^(.*);(.*)");
+            if (commentmatch.Success)
+            {
+                line = commentmatch.Groups[1].Value;
+            }
+
+            if (macro == true)
+            {
+                Match matcha = Regex.Match(line, @"^[ \t]+ENDM[ \n\r\t]*");
+                if (matcha.Success)
+                {
+                    sendmsg("END macro ");
+                    macro = false;
+                    return;
+                }
+                else
+                {
+                    //save this line in the current macro
+                    macros[currentmacro].addline(line);
+                    return;
+                }
+            }
+
+            Match macromatch = Regex.Match(line, @"^([A-Za-z0-9_$-]+)[ \t]*MACRO[ \t]*(.*)[\r\n]+");
+            if (macromatch.Success)
+            {
+                currentmacro = macromatch.Groups[1].Value;
+                string args = macromatch.Groups[2].Value;
+                args=args.Trim();
+                sendmsg("Found macro " + currentmacro);
+                macro = true;
+
+                string[] arargs = args.Split(new char[] { ',' });
+
+                macros[currentmacro] = new macro();
+                macros[currentmacro].command = currentmacro;
+                macros[currentmacro].setargs(arargs.ToList());
+
+                return;
+            }
+
+
+            //Directives again
+            {
+                Match match2 = Regex.Match(line, @"^[ \t]+\.([A-Za-z0-9]+)[ \t]+([A-Za-z0-9.]*)[ \t\r]*");
+                if (match2.Success)
+                {
+                    //textBox2.AppendText("Found Preprocessor " + match2.Groups[1].Value + " => " + match2.Groups[2].Value + "\r\n");
+                    string directive = match2.Groups[1].Value;
+                    string value = match2.Groups[2].Value;
+
+                    if (directive.ToUpper() == "CODE")
+                    {
+                        codesegment = true;
+                    }
+
+                    if (directive.ToUpper() == "DATA")
+                    {
+                        codesegment = false;
+                    }
+
+
+                    //word size data
+                    if (directive.ToUpper() == "DW")
+                    {
+                        if (codesegment == true)
+                        {
+                            int val;
+                            argtype at = validatearg(value, out val);
+
+                            if (at == argtype.IMMEDIATE)
+                            {
+                                byte[] data = new byte[2];
+                                data[0] = (byte)(val >> 8);
+                                data[1] = (byte)(val & 0xff);
+
+                                //OK its good
+                                pushbytes(data);
+                            }
+
+
+                            if (at == argtype.LABEL)
+                            {
+                                byte[] data = new byte[2];
+                                data[0] = 0;
+                                data[1] = 0;
+                                linkrequiredat.Add(org, new linkrequiredatdata(16, value));
+                                pushbytes(data);
+                            }
+
+
+
+                            else
+                            {
+                                //WTF was that,, parse error;
+                            }
+
+                        }
+                    }
+                }
+            }
+
+            {
+
+                Match equmatch = Regex.Match(line, @"^([A-Za-z0-9_$-]+)[ \t]*.equ[ \t]+([A-Za-z0-9]*)");
+                if (equmatch.Success)
+                {
+                    equs[equmatch.Groups[1].Value] = equmatch.Groups[2].Value;
+                    sendmsg(String.Format("Found equ {0} -> {1} ", equmatch.Groups[1].Value, equmatch.Groups[2].Value));
+                    return;
+                }
+            }
+
+            // Labels
+            Match match = Regex.Match(line, @"^([A-Za-z0-9]+):(.*)");
+            if (match.Success)
+            {
+                string key = match.Groups[1].Value;
+                string rest = match.Groups[2].Value;
+                // textBox2.AppendText("Found lable " + key + "\r\n");
+                fixlabel(key);
+                line = rest;
+            }
+
+            Match match3 = Regex.Match(line, @"^[ \t]+([A-Za-z0-9]+)[ \t]*(.*)[ \n\r\t]*(;*.*)");
+            if (match3.Success)
+            {
+                string arg1 = null;
+                string arg2 = null;
+                string command = match3.Groups[1].Value;
+                // textBox2.AppendText("Found command " + command + " -- > ");
+                // Now break down that command into 0,1 or 2 paramater
+
+                if (match3.Groups[2].Value != "")
+                {
+                    string p = match3.Groups[2].Value;
+
+                    Match match4a = Regex.Match(p, @"^[ \t]*([()a-zA-Z0-9+]+)[ \t\r]*$");
+                    if (match4a.Success)
+                    {
+                        //textBox2.AppendText(" arguments \"" + match4a.Groups[1].Value + "\"");
+                        arg1 = match4a.Groups[1].Value;
+                    }
+                    else
+                    {
+                        Match match4 = Regex.Match(p, @"[ \t]*([()a-zA-Z0-9+]+)[ \t]*[, ]*[ \t]*([()a-zA-Z0-9+']+)[ \t\r]*");
+                        if (match4.Success)
+                        {
+                            // textBox2.AppendText(" arguments \"" + match4.Groups[1].Value + "\" -- \"" + match4.Groups[2].Value + "\"");
+                            arg1 = match4.Groups[1].Value;
+                            arg2 = match4.Groups[2].Value;
+                        }
+                    }
+                }
+
+                try
+                {
+                    pushcommand(command, arg1, arg2, line);
+                }
+                catch (Exception ex)
+                {
+
+                    sendmsg(ex.Message + "\nOn line " + lineno.ToString() + "\n" + line);
+                    return;
+                }
+                //textBox2.AppendText("\r\n");
+
+            }
+
+
+
+
+        }
+
+        // Do stuff
+        bool codesegment;
+        bool macro;
+        string currentmacro;
+        int lineno;
+
+
         public void parse(string code)
         {
-            // Do stuff
-            bool codesegment=true;
-            bool macro = false;
-            string currentmacro = "";
-
+           
            // reset();
            // textBox2.Clear();
 
@@ -1148,206 +1477,20 @@ namespace z80assemble
 
             string[] lines = code.Split(delim);
 
-            int lineno = 0;
+           lineno = 0;
+           currentmacro = "";
+           macro = false;
+           codesegment = true;
 
             pass1(lines);
 
             foreach (string linex in lines)
             {
-                string line = linex;
+                parseline(linex);
 
+ 
                 lineno++;
                 //Look at character at start of line and decide action
-
-                //comment line or null line
-                if (line.Length == 0)
-                {
-                    //textBox2.AppendText("\r\n");
-                    continue;
-                }
-
-                if (line[0] == ';')
-                {
-                    //textBox2.AppendText("**** \r\n");
-                    continue;
-                }
-
-                if (line[0] == '\r' || line[0] == '\n')
-                {
-                    //textBox2.AppendText("\r\n");
-                    continue;
-                }
-
-                Match match5 = Regex.Match(line, @"^[ \t]+;.*");
-                if (match5.Success)
-                {
-                    //textBox2.AppendText("\r\n");
-                    continue;
-                }
-
-                Match commentmatch = Regex.Match(line, @"^(.*);(.*)");
-                if (commentmatch.Success)
-                {
-                    line = commentmatch.Groups[1].Value;
-                }
-
-                if (macro == true)
-                {
-                    Match matcha = Regex.Match(line, @"^[ \t]+ENDM[ \n\r\t]*");
-                    if (matcha.Success)
-                    {
-                        sendmsg("END macro ");
-                        macro = false;
-                        continue;
-                    }
-                    else
-                    {
-                        //save this line in the current macro
-                        macros[currentmacro].Add(line);
-                        continue;
-                    }
-                }
-
-                Match macromatch = Regex.Match(line, @"^([A-Za-z0-9_$-]+)[ \t]*MACRO[ \n\r\t]*");
-                if (macromatch.Success)
-                {
-                    currentmacro = macromatch.Groups[1].Value;
-                    sendmsg("Found macro " + currentmacro);
-                    macro = true;
-                    macros[currentmacro] = new List<string>();
-
-                    continue;
-                }
-
-
-                //Directives again
-                {
-                    Match match2 = Regex.Match(line, @"^[ \t]+\.([A-Za-z0-9]+)[ \t]+([A-Za-z0-9.]*)[ \t\r]*");
-                    if (match2.Success)
-                    {
-                        //textBox2.AppendText("Found Preprocessor " + match2.Groups[1].Value + " => " + match2.Groups[2].Value + "\r\n");
-                        string directive = match2.Groups[1].Value;
-                        string value = match2.Groups[2].Value;
-
-                        if (directive.ToUpper() == "CODE")
-                        {
-                            codesegment = true;
-                        }
-
-                        if (directive.ToUpper() == "DATA")
-                        {
-                            codesegment = false;
-                        }
-
-
-                        //word size data
-                        if (directive.ToUpper() == "DW")
-                        {
-                            if (codesegment == true)
-                            {
-                                int val;
-                                argtype at = validatearg(value, out val);
-
-                                if (at == argtype.IMMEDIATE)
-                                {
-                                    byte[] data = new byte[2];
-                                    data[0] = (byte)(val >> 8);
-                                    data[1] = (byte)(val & 0xff);
-
-                                    //OK its good
-                                    pushbytes(data);
-                                }
-
-
-                                if (at== argtype.LABEL)
-                                {
-                                    byte[] data = new byte[2];
-                                    data[0] = 0;
-                                    data[1] = 0;
-                                    linkrequiredat.Add(org, new linkrequiredatdata(16,value));
-                                    pushbytes(data);
-                                }
-
-
-
-                                else
-                                {
-                                    //WTF was that,, parse error;
-                                }
-
-                            }
-                        }
-                    }
-                }
-
-                {
-
-                    Match equmatch = Regex.Match(line, @"^([A-Za-z0-9_$-]+)[ \t]*.equ[ \t]+([A-Za-z0-9]*)");
-                    if (equmatch.Success)
-                    {
-                        equs[equmatch.Groups[1].Value] = equmatch.Groups[2].Value;
-                        sendmsg(String.Format("Found equ {0} -> {1} ", equmatch.Groups[1].Value, equmatch.Groups[2].Value));
-                        continue;
-                    }
-                }
-
-                // Labels
-                Match match = Regex.Match(line, @"^([A-Za-z0-9]+):(.*)");
-                if (match.Success)
-                {
-                    string key = match.Groups[1].Value;
-                    string rest = match.Groups[2].Value;
-                    // textBox2.AppendText("Found lable " + key + "\r\n");
-                    fixlabel(key);
-                    line = rest;
-                }
-
-                Match match3 = Regex.Match(line, @"^[ \t]+([A-Za-z0-9]+)[ \t]*(.*)[ \n\r\t]*(;*.*)");
-                if (match3.Success)
-                {
-                    string arg1 = null;
-                    string arg2 = null;
-                    string command = match3.Groups[1].Value;
-                    // textBox2.AppendText("Found command " + command + " -- > ");
-                    // Now break down that command into 0,1 or 2 paramater
-
-                    if (match3.Groups[2].Value != "")
-                    {
-                        string p = match3.Groups[2].Value;
-
-                        Match match4a = Regex.Match(p, @"^[ \t]*([()a-zA-Z0-9+]+)[ \t\r]*$");
-                        if (match4a.Success)
-                        {
-                            //textBox2.AppendText(" arguments \"" + match4a.Groups[1].Value + "\"");
-                            arg1 = match4a.Groups[1].Value;
-                        }
-                        else
-                        {
-                            Match match4 = Regex.Match(p, @"[ \t]*([()a-zA-Z0-9+]+)[ \t]*[, ]*[ \t]*([()a-zA-Z0-9+']+)[ \t\r]*");
-                            if (match4.Success)
-                            {
-                                // textBox2.AppendText(" arguments \"" + match4.Groups[1].Value + "\" -- \"" + match4.Groups[2].Value + "\"");
-                                arg1 = match4.Groups[1].Value;
-                                arg2 = match4.Groups[2].Value;
-                            }
-                        }
-                    }
-
-                    try
-                    {
-                        pushcommand(command, arg1, arg2,line);
-                    }
-                    catch (Exception ex)
-                    {
-
-                        sendmsg(ex.Message + "\nOn line " + lineno.ToString() + "\n" + line);
-                        break;
-                    }
-                    //textBox2.AppendText("\r\n");
-
-                }
-
-
 
 
             }
