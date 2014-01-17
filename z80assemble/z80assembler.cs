@@ -1415,12 +1415,60 @@ namespace z80assemble
                         }
 
                     }
+                    if (codesegment == true)
+                    {
+                        byte[] data;
+                        switch (directive.ToUpper())
+                        {
+                            case "DB":
+                                data = new byte[1];
+                                int idata;
+                                if (isnumber(value, out idata))
+                                {
+                                    if (idata > 255)
+                                    {
+                                        Exception e = new Exception("Number too big for .db");
+                                        throw e;
+                                    }
 
+                                    data[0] = (byte)idata;
+                                    pushbytes(data);
+                                }
+                                else
+                                {
+                                    Exception e = new Exception("Unable to parse " + value);
+                                    throw e;
+                                }
+                              
+                                break;
+                            case "DW":
+                                data = new byte[2];
+                                int val;
+                                if (int.TryParse(value, out val))
+                                {
+                                    data[0] = (byte)(val & 0xFF);
+                                    data[1] = (byte)(val >> 8 & 0xff);
+                                    pushbytes(data);
+                                }
+                                else
+                                {
+                                    linkrequiredatdata d = new linkrequiredatdata(2,value);
+                                    linkrequiredat.Add(org, d);
+                                    org += 2;
+                                }
+                                break;
+                            case "DS":
+                                //FIXME!!!
+                                break;
+
+                        }
+                    }
+
+                    /*
                     //word size data
                     if (directive.ToUpper() == "DW")
                     {
-                        if (codesegment == true)
-                        {
+                        
                             int val;
                             argtype at = validatearg(value, out val);
 
@@ -1447,8 +1495,9 @@ namespace z80assemble
                                 //WTF was that,, parse error;
                             }
 
-                        }
+                        
                     }
+                     */
                 }
             }
 
