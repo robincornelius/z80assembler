@@ -287,6 +287,8 @@ namespace z80assemble
             if (arg == null || arg == "")
                 return argtype.NOTPRESENT;
 
+            arg = arg.Trim();
+
             string uarg = arg.ToUpper();
             string xarg = arg;
 
@@ -438,7 +440,16 @@ namespace z80assemble
             {
                 if (s == xarg)
                 {
-                    return argtype.LABEL;
+                    imvalue = 0; // We don't know the address yet we do this at link time
+
+                    if (indirect)
+                    {
+                        return argtype.INDIRECTLABEL;
+                    }
+                    else
+                    {
+                        return argtype.LABEL;
+                    }
                 }
 
             }
@@ -544,7 +555,7 @@ namespace z80assemble
             // (variable) - Indirect variable
 
             //determine argtypes
-
+         
             int val1;
             int val2;
             argtype at1 = validatearg(arg1,out val1,false);
@@ -604,8 +615,11 @@ namespace z80assemble
 
             // FIXME LD A,R generates wrong opcode         
 
+           
+
             foreach (command c in commandtable)
             {
+
                 if (c.cmd == command)
 
                     if ((at1 == c.at1 || (at1 == argtype.LABEL) || (at1 == argtype.INDIRECTLABEL)) && (at2 == c.at2 || (at2 == argtype.LABEL)) || (at2 == argtype.INDIRECTLABEL))
@@ -991,7 +1005,7 @@ namespace z80assemble
 
             foreach(string bit in bits)
             {
-                match = Regex.Match(opcodes, @"([A-Z0-9]+)\+r");
+                match = Regex.Match(bit, @"([A-Z0-9]+)\+r");
                 if (match.Success)
                 {
                     b = byte.Parse(match.Groups[1].Value, System.Globalization.NumberStyles.HexNumber);

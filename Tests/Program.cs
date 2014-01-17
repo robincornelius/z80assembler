@@ -77,9 +77,9 @@ namespace Tests
             Debug.Assert(z.getopcodes("BIT","1","(IX+22h)") == "DD CB 22 4E");
             Debug.Assert(z.getopcodes("BIT", "2", "(IY+ddh)") == "FD CB DD 56"); //46+8*b
 //            Debug.Assert(z.getopcodes("BIT", "2", "a") == "CB 57"); //40+8*b+r40
-            Debug.Assert(z.getopcodes("CALL","1234h","") == "CD 12 34");
-            Debug.Assert(z.getopcodes("CALL","C","2310h") == "DC 23 10"); //Check Endianness
-            Debug.Assert(z.getopcodes("CALL","M","9900h") == "FC 99 00");
+            Debug.Assert(z.getopcodes("CALL","1234h","") == "CD 34 12");
+            Debug.Assert(z.getopcodes("CALL","C","2310h") == "DC 10 23"); //Check Endianness
+            Debug.Assert(z.getopcodes("CALL","M","9900h") == "FC 00 99");
             //Debug.Assert(z.getopcodes("CALL","NC","nn") == "D4 nn nn");
             //Debug.Assert(z.getopcodes("CALL","NZ","nn") == "C4 nn nn");
             //Debug.Assert(z.getopcodes("CALL","P","nn") == "F4 nn nn");
@@ -199,7 +199,8 @@ namespace Tests
             Debug.Assert(z.getopcodes("LD", "A", "(HL)") == "7E");
             //Debug.Assert(z.getopcodes("LD","A","(IX+o)") == "DD 7E oo");
             //Debug.Assert(z.getopcodes("LD","A","(IY+o)") == "FD 7E oo");
-            //Debug.Assert(z.getopcodes("LD","A","(nn)") == "3A nn nn");
+            string op = z.getopcodes("LD", "A", "(1234h)");
+            Debug.Assert( op == "3A 34 12");
             //Debug.Assert(z.getopcodes("LD","A","n") == "3E nn");
             //Debug.Assert(z.getopcodes("LD","A","r") == "78+r");
             //Debug.Assert(z.getopcodes("LD","A","IXp") == "DD 78+p");
@@ -384,7 +385,9 @@ namespace Tests
             Debug.Assert(z.getopcodes("SRA", "(HL)", "") == "CB 2E");
             //Debug.Assert(z.getopcodes("SRA","(IX+o)","") == "DD CB oo 2E");
             //Debug.Assert(z.getopcodes("SRA","(IY+o)","") == "FD CB oo 2E");
-            //Debug.Assert(z.getopcodes("SRA","r","") == "CB 28+r");
+
+            Debug.Assert(z.getopcodes("SRA","a","") == "CB 2F");
+
             Debug.Assert(z.getopcodes("SRL", "(HL)", "") == "CB 3E");
             //Debug.Assert(z.getopcodes("SRL","(IX+o)","") == "DD CB oo 3E");
             //Debug.Assert(z.getopcodes("SRL","(IY+o)","") == "FD CB oo 3E");
@@ -404,7 +407,10 @@ namespace Tests
             //Debug.Assert(z.getopcodes("XOR","IXp","") == "DD A8+p");
             //Debug.Assert(z.getopcodes("XOR","IYq","") == "FD A8+q");
 
-
+            z.pushlabel("test");
+            z.fixlabel("test");
+            op = z.getopcodes("LD", "A", "(test)");
+            Debug.Assert(op == "3A 00 00");
 
         }
     }
