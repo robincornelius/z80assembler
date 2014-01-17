@@ -28,6 +28,12 @@ namespace Z80IDE
             this.FormClosing += new FormClosingEventHandler(EditorWindow_FormClosing);
 
             fastColoredTextBox1.TextChanged += new EventHandler<FastColoredTextBoxNS.TextChangedEventArgs>(fastColoredTextBox1_TextChanged);
+
+            fastColoredTextBox1.Language = FastColoredTextBoxNS.Language.Custom;
+
+            fastColoredTextBox1.DescriptionFile = "syntax.xml";
+           
+
         }
 
         void fastColoredTextBox1_TextChanged(object sender, FastColoredTextBoxNS.TextChangedEventArgs e)

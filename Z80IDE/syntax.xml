@@ -1,0 +1,12 @@
+﻿<doc>
+<style name="Comment" color="green" backColor="#f5f5e5" />
+<rule style="Comment">;.*</rule>
+  
+<style name="Red" color="Red" backColor="#f5f5e5" />
+<rule style="Red">[a-zA-Z0-9]+.*:</rule>
+
+<style name="Blue" color="Blue" backColor="#f5f5e5" />
+<rule style="Blue">[a-zA-Z0-9]+[ \t]+\.equ[ \t]+[a-zA-Z0-9]+</rule>
+
+</doc>
+

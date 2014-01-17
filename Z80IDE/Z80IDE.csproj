@@ -169,6 +169,9 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
+    <Content Include="syntax.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <EmbeddedResource Include="Images\New.ico" />
     <Content Include="Images\Open.ico" />
     <Content Include="Images\OutputWindow.ico" />
