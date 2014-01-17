@@ -225,6 +225,8 @@ namespace z80assemble
             macros = new Dictionary<string, macro>();
             equs = new Dictionary<string, string>();
 
+            ramptr = ramstart;
+
             //resetallbytes
 
         }
@@ -1123,6 +1125,13 @@ namespace z80assemble
             labels[label]=org;
         }
 
+        public void fixdatalabel(string label,int size)
+        {
+            Console.WriteLine(String.Format("Fixed Label {0} at address {1:x4}", label, org));
+            labels[label] = ramptr;
+            ramptr += size;
+        }
+
         public void pushlabel(string label)
         {
             Console.WriteLine(String.Format("Found Label {0}",label));
@@ -1256,6 +1265,8 @@ namespace z80assemble
             }
         }
 
+        string currentdatalabel = "";
+       
         public void parseline(string line)
         {
 
@@ -1290,6 +1301,26 @@ namespace z80assemble
             {
                 line = commentmatch.Groups[1].Value;
             }
+
+            // Labels
+            Match match = Regex.Match(line, @"^([A-Za-z0-9]+):(.*)");
+            if (match.Success)
+            {
+                string key = match.Groups[1].Value;
+                string rest = match.Groups[2].Value;
+                // textBox2.AppendText("Found lable " + key + "\r\n");
+                if (codesegment == true)
+                {
+                    fixlabel(key);
+                }
+                else
+                {
+                    currentdatalabel = key;
+                }
+
+                line = rest;
+            }
+
 
             if (macro == true)
             {
@@ -1329,7 +1360,7 @@ namespace z80assemble
 
             //Directives again
             {
-                Match match2 = Regex.Match(line, @"^[ \t]+\.([A-Za-z0-9]+)[ \t]+([A-Za-z0-9.]*)[ \t\r]*");
+                Match match2 = Regex.Match(line, @"^[ \t]+\.([A-Za-z0-9]+)[ \t]*([A-Za-z0-9.]*)[ \t\r]*");
                 if (match2.Success)
                 {
                     //textBox2.AppendText("Found Preprocessor " + match2.Groups[1].Value + " => " + match2.Groups[2].Value + "\r\n");
@@ -1346,6 +1377,30 @@ namespace z80assemble
                         codesegment = false;
                     }
 
+
+                    if (codesegment == false)
+                    {
+                        int bytes=0;
+                        if (directive.ToUpper() == "DW")
+                            bytes=2;
+                        if(directive.ToUpper() == "DB")
+                             bytes=1;
+                        if (directive.ToUpper() == "DS")
+                        {
+                            int size = int.Parse(value);
+                            bytes = size; //FIX ME DETECT HERE;
+                        }
+
+                        if (bytes > 0)
+                        {
+                            if (currentdatalabel != "")
+                            {
+                                fixdatalabel(currentdatalabel, bytes);
+                            }
+                            return;
+                        }
+
+                    }
 
                     //word size data
                     if (directive.ToUpper() == "DW")
@@ -1365,7 +1420,6 @@ namespace z80assemble
                                 pushbytes(data);
                             }
 
-
                             if (at == argtype.LABEL)
                             {
                                 byte[] data = new byte[2];
@@ -1374,9 +1428,6 @@ namespace z80assemble
                                 linkrequiredat.Add(org, new linkrequiredatdata(16, value));
                                 pushbytes(data);
                             }
-
-
-
                             else
                             {
                                 //WTF was that,, parse error;
@@ -1396,17 +1447,6 @@ namespace z80assemble
                     sendmsg(String.Format("Found equ {0} -> {1} ", equmatch.Groups[1].Value, equmatch.Groups[2].Value));
                     return;
                 }
-            }
-
-            // Labels
-            Match match = Regex.Match(line, @"^([A-Za-z0-9]+):(.*)");
-            if (match.Success)
-            {
-                string key = match.Groups[1].Value;
-                string rest = match.Groups[2].Value;
-                // textBox2.AppendText("Found lable " + key + "\r\n");
-                fixlabel(key);
-                line = rest;
             }
 
             Match match3 = Regex.Match(line, @"^[ \t]+([A-Za-z0-9]+)[ \t]*(.*)[ \n\r\t]*(;*.*)");

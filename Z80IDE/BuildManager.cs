@@ -30,7 +30,9 @@ namespace Z80IDE
         public void build()
         {
 
-            assembler.ramstart = solution.details.ramstart;
+            //assembler.ramstart = solution.details.ramstart;
+            assembler.ramstart = 0x4000;
+
 
             assembler.Msg += new z80assembler.MsgHandler(assembler_Msg);
 
