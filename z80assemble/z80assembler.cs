@@ -21,7 +21,6 @@ namespace z80assemble
             INDIRECTIMMEDIATE, //(5) 
             LABEL, // variable
             INDIRECTLABEL,
-            EXLABEL, // variable
             INDIRECTOFFSET, //(ix+5)
         }
 
@@ -55,6 +54,21 @@ namespace z80assemble
         }
     }
 
+    public class linkrequiredatdata
+    {
+        public linkrequiredatdata(int size, string label, bool realitive=false, int org=0)
+        {
+            this.size = size;
+            this.label = label;
+            this.realitive = realitive;
+            this.org = org;
+
+        }
+        public int size;
+        public string label;
+        public bool realitive;
+        public int org;
+    }
 
     public class z80assembler
     {
@@ -67,7 +81,7 @@ namespace z80assemble
         Dictionary<string, int> defines = new Dictionary<string, int>();
         List<command> commandtable = new List<command>();
         List<string> externs = new List<string>();
-        Dictionary<int,string> linkrequiredat = new Dictionary<int,string>();
+        Dictionary<int, linkrequiredatdata> linkrequiredat = new Dictionary<int, linkrequiredatdata>();
 
         Dictionary<string, List<string>> macros = new Dictionary<string, List<string>>();
 
@@ -136,7 +150,7 @@ namespace z80assemble
             org = 0;
             bytes = new Dictionary<int, byte>();
             labels = new Dictionary<string, int>();
-            linkrequiredat = new Dictionary<int, string>();
+            linkrequiredat = new Dictionary<int, linkrequiredatdata>();
             defines = new Dictionary<string, int>();
             macros = new Dictionary<string, List<string>>();
             equs = new Dictionary<string, string>();
@@ -352,7 +366,7 @@ namespace z80assemble
             {
                 if (s == xarg)
                 {
-                    return argtype.EXLABEL;
+                    return argtype.LABEL;
                 }
 
             }
@@ -385,7 +399,7 @@ namespace z80assemble
             }
         }
 
-        public void pushcommand(string command, string arg1, string arg2)
+        public void pushcommand(string command, string arg1, string arg2,string line)
         {
 
             //Special handlers here that are not real op codes
@@ -409,7 +423,9 @@ namespace z80assemble
 
             if (codes == "")
                 return;
-         
+
+            Console.WriteLine(String.Format("{0:x4} {1} \t\t {2}",org,line.Trim(),codes));
+
             string[] bits = codes.Split(new char[]{' '});
 
             foreach (string bit in bits)
@@ -419,11 +435,14 @@ namespace z80assemble
                 org++;
             }
 
-            Console.WriteLine("OPCODES " + codes);
-            int x = 0;
-            x++;
+ 
+        }
 
-
+        int endiantwiddle(int val)
+        {
+            int val1h = val >> 8;
+            int val1l = val & 0x00ff;
+            return val1l << 8 | val1h;
         }
 
         public string getopcodes(string command, string arg1, string arg2)
@@ -498,19 +517,16 @@ namespace z80assemble
 
             bool found=false;
 
-            // FIXME LD A,R generates wrong opcode
-
+            // FIXME LD A,R generates wrong opcode         
 
             foreach (command c in commandtable)
             {
-
-
-
                 if (c.cmd == command)
 
                     if ((at1 == c.at1 || (at1 == argtype.LABEL) || (at1 == argtype.INDIRECTLABEL)) && (at2 == c.at2 || (at2 == argtype.LABEL)) || (at2 == argtype.INDIRECTLABEL))
                 {
-                    // If we have argtype reg make sure we are on the correct reg
+                    
+                    // If argument 1 is a register make sure it matches (also apply to indirect)
                     if (at1 == argtype.REG || at1 == argtype.INDIRECTREG)
                     {
                         if (arg1.ToUpper() != c.arg1)
@@ -522,6 +538,7 @@ namespace z80assemble
                         }
                     }
 
+                    // If argument 2 is a register make sure it matches (also apply to indirect)
                     if (at2 == argtype.REG || at2 == argtype.INDIRECTREG)
                     {
                         if (arg2.ToUpper() != c.arg2 )
@@ -531,22 +548,38 @@ namespace z80assemble
                             }
                     }
 
-                    if (at2 == argtype.FLAG && arg2.ToUpper() != c.arg2)
-                        continue;
-
+                    // If argument 1 is a flag make sure it matches 
                     if (at1 == argtype.FLAG && arg1.ToUpper() != c.arg1)
                         continue;
 
-                    if (at2 == argtype.INDIRECTOFFSET)
+                    // If argument 2 is a flag make sure it matches 
+                    if (at2 == argtype.FLAG && arg2.ToUpper() != c.arg2)
+                        continue;
+
+
+                    if (at1 == argtype.INDIRECTLABEL && c.at1 != argtype.INDIRECTIMMEDIATE)
                     {
-                        string[] bits1 = arg2.Split(new char[]{'+'});
-                        string[] bits2 = c.arg2.Split(new char[] { '+' });
-
-                        if (bits1[0] != bits2[0])
-                            continue;
-
+                        continue;
                     }
 
+                    if (at2 == argtype.INDIRECTLABEL && c.at2 != argtype.INDIRECTIMMEDIATE)
+                    {
+                        continue;
+                    }
+
+                    if (at1 == argtype.LABEL && c.at1 != argtype.IMMEDIATE)
+                    {
+                        continue;
+                    }
+
+                    if (at2 == argtype.LABEL && c.at2 != argtype.IMMEDIATE)
+                    {
+                        continue;
+                    }
+
+
+                    //if arg1 is a reg+offset ensure reg part patches
+                    //NB there is no OFFSET type, this is always indirect
                     if (at1 == argtype.INDIRECTOFFSET)
                     {
                         string[] bits1 = arg1.Split(new char[] { '+' });
@@ -557,7 +590,19 @@ namespace z80assemble
 
                     }
                   
+                    //if arg2 is a reg+offset ensure reg part patches
+                    if (at2 == argtype.INDIRECTOFFSET)
+                    {
+                        string[] bits1 = arg2.Split(new char[]{'+'});
+                        string[] bits2 = c.arg2.Split(new char[] { '+' });
 
+                        if (bits1[0] != bits2[0])
+                            continue;
+
+                    }
+
+                    //special case needs fixing as we should generate all the opcodes for the various r
+                    //registers (7 of them) then this special case would vanish
                     if (at2 == argtype.REG)
                     {
                         if (arg2.ToUpper() == "R" && c.arg2 == "r")
@@ -567,6 +612,7 @@ namespace z80assemble
                         }
                     }
 
+                   
 
                     // if there are no args just return opcode
                     if (at1 == argtype.NOTPRESENT && at2 == argtype.NOTPRESENT)
@@ -639,6 +685,7 @@ namespace z80assemble
                         return generateplaceholder(arg2, c.opcode);
                     }
 
+
                     if (at2 == argtype.INDIRECTOFFSET)
                     {
                         string newstr = string.Format("{0:X2}", val2);
@@ -703,6 +750,19 @@ namespace z80assemble
                         return generateplaceholder(arg2, c.opcode);
                     }
 
+                    if (at1 == argtype.INDIRECTLABEL && at2 == argtype.REG)
+                    {
+                        linkrequiredat.Add(org + 1, new linkrequiredatdata(16,arg1.Trim(new char[] { '(', ')' })));
+                        arg1 = arg1.Trim(new char[]{'(',')'});
+
+                        return c.opcode.Replace('n','0');
+                    }
+
+                    if (at2 == argtype.INDIRECTLABEL && at1 == argtype.REG)
+                    {
+                        linkrequiredat.Add(org + 1, new linkrequiredatdata(16,arg2.Trim(new char[] { '(', ')' })));
+                        return c.opcode.Replace('n', '0');
+                    }
 
                     Exception ex2 = new Exception("Failed to generate opcode");
                     throw (ex2);
@@ -714,6 +774,18 @@ namespace z80assemble
 
 
             }
+
+          //Is it a macro?
+          foreach(KeyValuePair<string, List<string>> kvp in macros)
+          {
+              if (kvp.Key == command)
+              {
+                  //fixme not implemented
+                  Console.WriteLine("WE NEED TO Insert macro " + command);
+                  //fix me we should pass entire arg string to macros
+                  return "";
+              }
+          }
 
           Exception ex = new Exception("Failed to find OP code");
           throw ex;
@@ -820,22 +892,37 @@ namespace z80assemble
             Match match = Regex.Match(opstring, @"^([A-Z0-9]*) nn nn$");
             if (match.Success)
             {
+                //fix me wrong length?
                 int length = match.Groups[1].Value.Length/2;
-                linkrequiredat.Add(org + length, label);
-                Console.WriteLine(String.Format("Link required at address {0} for label {1}",org+length,label));
+                linkrequiredat.Add(org + length, new linkrequiredatdata(16,label.Trim(new char[] { '(', ')' })));
+                Console.WriteLine(String.Format("Link required at address {0:x} for label {1}",org+length,label));
                 return(string.Format("{0} 00 00",match.Groups[1].Value));
             }
             
-            //FIXME we need to let this know its an 8bit insert not a 16bit!!!
             //Currently linker will just do a 16b
+            //Also this only matches the JR and DJNZ cases which are offset realitive eg +/- addressing!!
             Match match2 = Regex.Match(opstring, @"^([A-Z0-9]*) oo$");
             if (match2.Success)
             {
-                int length = match.Groups[1].Value.Length / 2;
-                linkrequiredat.Add(org + length, label);
-                Console.WriteLine(String.Format("Link required at address {0} for label {1}", org + length, label));
+                //fix me wrong length?
+                int length = match2.Groups[1].Value.Length / 2;
+
+                linkrequiredatdata lrd = new linkrequiredatdata(8, label.Trim(new char[] { '(', ')' }), true, org + length+1); //FIX ME +1??
+                linkrequiredat.Add(org + length, lrd);
+                Console.WriteLine(String.Format("Link required at address {0:x} for label {1}", org + length, label));
                 return (string.Format("{0} 00", match2.Groups[1].Value));
             }
+
+            Match match3 = Regex.Match(opstring, @"^([A-Z0-9]*) nn$");
+            if (match3.Success)
+            {
+                int length = match3.Groups[1].Value.Length / 2;
+                linkrequiredat.Add(org + length, new linkrequiredatdata(8,label.Trim(new char[] { '(', ')' })));
+                Console.WriteLine(String.Format("Link required at address {0:x} for label {1}", org + length, label));
+                return (string.Format("{0} 00", match3.Groups[1].Value));
+            }
+
+
 
             Exception e = new Exception("Error matching label opcodes");
                       throw (e);
@@ -863,7 +950,7 @@ namespace z80assemble
                       throw (e);
                   }
 
-                  return string.Format("{0} {1:x2} {2:x2}", match.Groups[1].Value, hi, lo);
+                  return string.Format("{0} {1:x2} {2:x2}", match.Groups[1].Value, lo, hi);
               }
 
 
@@ -909,7 +996,7 @@ namespace z80assemble
     
         public void fixlabel(string label)
         {
-            Console.WriteLine(String.Format("Fixed Label {0} at address {1}", label, org));
+            Console.WriteLine(String.Format("Fixed Label {0} at address {1:x4}", label, org));
             labels[label]=org;
         }
 
@@ -933,15 +1020,56 @@ namespace z80assemble
 
         public void link()
         {
-            foreach (KeyValuePair<int, string> kvp in linkrequiredat)
+            //TODO at the end of the file remove all non externs
+            try
             {
-                int address = kvp.Key;
-                string label = kvp.Value;
+                foreach (KeyValuePair<int, linkrequiredatdata> kvp in linkrequiredat)
+                {
+                    int address = kvp.Key;
+                    linkrequiredatdata data = kvp.Value;
+                    string label = data.label;
 
-                int val = labels[label];
+                    if (!labels.ContainsKey(label))
+                    {
+                        if(externs.Contains(label))
+                            continue;
 
-                bytes[address] = (byte)(val>>8);
-                bytes[address + 1] = (byte)val;
+                        sendmsg("Link error could not find extern " + label);
+                        return;
+                    }
+
+                    int val = labels[label];
+
+                    if (data.size == 16)
+                    {
+                        bytes[address+1] = (byte)(val >> 8);
+                        bytes[address] = (byte)val;
+                    }
+                    if (data.size == 8)
+                    {
+                        if (data.realitive == true)
+                        {
+                            val = val - data.org;
+                            if (val < -127 || val > 127)
+                            {
+                                Exception e = new Exception("Realitive jump to far");
+                                throw e;
+                            }
+
+                            bytes[address] = (byte)val;
+                        }
+                        else
+                        {
+                            bytes[address] = (byte)val;
+                        }
+                    }
+
+                }
+
+            }
+            catch (Exception e)
+            {
+                sendmsg("Link error " + e.Message);
 
             }
 
@@ -1057,6 +1185,12 @@ namespace z80assemble
                     continue;
                 }
 
+                Match commentmatch = Regex.Match(line, @"^(.*);(.*)");
+                if (commentmatch.Success)
+                {
+                    line = commentmatch.Groups[1].Value;
+                }
+
                 if (macro == true)
                 {
                     Match matcha = Regex.Match(line, @"^[ \t]+ENDM[ \n\r\t]*");
@@ -1125,12 +1259,12 @@ namespace z80assemble
                                 }
 
 
-                                if (at == argtype.EXLABEL || at== argtype.LABEL)
+                                if (at== argtype.LABEL)
                                 {
                                     byte[] data = new byte[2];
                                     data[0] = 0;
                                     data[1] = 0;
-                                    linkrequiredat.Add(org, value);
+                                    linkrequiredat.Add(org, new linkrequiredatdata(16,value));
                                     pushbytes(data);
                                 }
 
@@ -1201,7 +1335,7 @@ namespace z80assemble
 
                     try
                     {
-                        pushcommand(command, arg1, arg2);
+                        pushcommand(command, arg1, arg2,line);
                     }
                     catch (Exception ex)
                     {

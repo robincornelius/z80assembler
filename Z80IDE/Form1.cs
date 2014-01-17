@@ -151,6 +151,7 @@ namespace Z80IDE
             EditorWindow ew = (EditorWindow)sender;
             editors.Remove(ew.filename);
             ew.Dispose();
+
         }
 
         private void toolStripButtonBuild_Click(object sender, EventArgs e)
@@ -159,6 +160,11 @@ namespace Z80IDE
             m_outputWindow.appendmsg("Starting build");
             BuildManager bm = new BuildManager(solution, m_outputWindow);
             bm.build();
+
+            HexView hv = new HexView(bm.getoutput());
+            hv.MdiParent = this;
+            hv.DockPanel = this.dockPanel;
+            hv.Show();
         }
 
         private void openSolutionToolStripMenuItem_Click(object sender, EventArgs e)

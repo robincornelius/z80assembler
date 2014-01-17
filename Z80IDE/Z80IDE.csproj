@@ -35,11 +35,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Be.Windows.Forms.HexBox, Version=1.4.2.21184, Culture=neutral, PublicKeyToken=e0e5adf0ebc99863, processorArchitecture=MSIL" />
     <Reference Include="FastColoredTextBox">
       <HintPath>..\FastColoredTextBox-master\Binary\FastColoredTextBox.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing.Design" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -82,6 +84,13 @@
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
+    <Compile Include="HexView.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="HexView.Designer.cs">
+      <DependentUpon>HexView.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MemoryByteProvider.cs" />
     <Compile Include="NewSolution.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -114,6 +123,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HexView.resx">
+      <DependentUpon>HexView.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="NewSolution.resx">
       <DependentUpon>NewSolution.cs</DependentUpon>

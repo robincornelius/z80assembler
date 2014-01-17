@@ -156,7 +156,7 @@ namespace z80assemble
 
                     try
                     {
-                        assembler.pushcommand(command, arg1, arg2);
+                        assembler.pushcommand(command, arg1, arg2,line);
                     }
                     catch (Exception ex)
                     {

@@ -51,5 +51,25 @@ namespace Z80IDE
         {
             outtarget.appendmsg(msg);
         }
+
+        public byte[] getoutput()
+        {
+            
+
+            byte[] b = new byte[0xFFFF];
+
+            if (assembler != null)
+            {
+
+                foreach (KeyValuePair<int, byte> d in assembler.bytes)
+                {
+                    b[d.Key] = d.Value;
+                }
+
+            }
+
+            return b;
+           
+        }
     }
 }
