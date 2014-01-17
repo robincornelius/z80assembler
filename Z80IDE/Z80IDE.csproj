@@ -163,6 +163,14 @@
       <Name>z80assembler</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Images\New.ico" />
+    <Content Include="Images\Open.ico" />
+    <Content Include="Images\OutputWindow.ico" />
+    <Content Include="Images\SolutionExplorer.ico" />
+    <Content Include="Images\ToolboxWindow.ico" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

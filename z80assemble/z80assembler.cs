@@ -611,11 +611,7 @@ namespace z80assemble
                 throw (e);
             }
 
-            bool found=false;
-
             // FIXME LD A,R generates wrong opcode         
-
-           
 
             foreach (command c in commandtable)
             {
@@ -864,11 +860,7 @@ namespace z80assemble
                     }
 
                     Exception ex2 = new Exception("Failed to generate opcode");
-                    throw (ex2);
-
-                    Console.WriteLine("Found command .. "+c.opcode);
-                    return "";
-
+                    throw (ex2); 
                 }
 
 
@@ -879,11 +871,7 @@ namespace z80assemble
           {
               if (kvp.Key == command)
               {
-                  //fixme not implemented
-                  Console.WriteLine("WE NEED TO Insert macro " + command);
-
-                 // processmacro(line);
-                  //fix me we should pass entire arg string to macros
+                  //return this special token so the the parent function knows to process the macro.
                   return "MACRO";
               }
           }
@@ -1038,7 +1026,6 @@ namespace z80assemble
                 return(string.Format("{0} 00 00",match.Groups[1].Value));
             }
             
-            //Currently linker will just do a 16b
             //Also this only matches the JR and DJNZ cases which are offset realitive eg +/- addressing!!
             Match match2 = Regex.Match(opstring, @"^([A-Z0-9]*) oo$");
             if (match2.Success)
@@ -1061,18 +1048,13 @@ namespace z80assemble
                 return (string.Format("{0} 00", match3.Groups[1].Value));
             }
 
-
-
             Exception e = new Exception("Error matching label opcodes");
                       throw (e);
-
-            return "";
+   
         }
 
         public string valueinsert(string opstring, int value,char target)
         {
-         
-              
               byte hi = (byte)(value >> 8);
               byte lo = (byte)value;
 
@@ -1128,8 +1110,6 @@ namespace z80assemble
 
               Exception ex = new Exception("Failed to insert value to opcodes");
               throw (ex);
-
-              return "";
         }
 
     
@@ -1253,8 +1233,17 @@ namespace z80assemble
                     if (directive.ToUpper() == "INCLUDE")
                     {                
                         //load file in value and recurse,
+                        StreamReader sr;
+                        try
+                        {
+                            sr = new StreamReader("files" + Path.DirectorySeparatorChar + value);
+                        }
+                        catch (Exception e)
+                        {
+                            sendmsg("Failed to open include file " + value);
+                            return;
+                        }
 
-                        StreamReader sr = new StreamReader("files"+Path.DirectorySeparatorChar+value);
                         string data = sr.ReadToEnd();
                         parse(data);
 
@@ -1556,18 +1545,14 @@ namespace z80assemble
                 //textBox2.AppendText("\r\n");
 
             }
-
-
-
-
         }
+
 
         // Do stuff
         bool codesegment;
         bool macro;
         string currentmacro;
         int lineno;
-
 
         public void parse(string code)
         {
@@ -1585,19 +1570,16 @@ namespace z80assemble
            macro = false;
            codesegment = true;
 
-            pass1(lines);
+           //pass 1 just gets any equs/labels etc in current file so they are defined if used before they 
+           //are defined.
+           pass1(lines);
 
-            foreach (string linex in lines)
-            {
-                parseline(linex);
-
- 
-                lineno++;
-                //Look at character at start of line and decide action
-
-
-            }
-
+           foreach (string linex in lines)
+           {
+               parseline(linex);
+               lineno++;
+               //Look at character at start of line and decide action
+           }
         }
 
         void sendmsg(string msg)

@@ -52,7 +52,7 @@ namespace DockSample
             this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Both;
             this.textBox1.Size = new System.Drawing.Size(539, 351);
             this.textBox1.TabIndex = 2;
-            this.textBox1.Text = resources.GetString("textBox1.Text");
+            this.textBox1.Text = "\r\n\r\n\r\n";
             this.textBox1.WordWrap = false;
             // 
             // DummyOutputWindow

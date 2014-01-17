@@ -62,7 +62,7 @@ namespace Z80IDE
                 Changed(this, e);
         }
 
-        public bool addfile(string pathname)
+        public bool addfile(string pathname,bool copy=true)
         {
           
          
@@ -73,7 +73,10 @@ namespace Z80IDE
                 return false;
             }
 
-            File.Copy(pathname, target);
+            if (copy==true)
+            {
+                File.Copy(pathname, target);
+            }
 
             file f = new file(filename,"");
           
@@ -94,7 +97,7 @@ namespace Z80IDE
             file removef=null;
             foreach (file f in details.files)
             {
-                if(f.name==name);
+                if(f.name==name)
                 {
                     removef=f;
                     break;

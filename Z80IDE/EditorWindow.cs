@@ -15,7 +15,7 @@ namespace Z80IDE
     {
 
         public delegate void EditorClosingHandler(object sender, EventArgs e);
-        public event EditorClosingHandler Closing;
+        public event EditorClosingHandler EditorClosing;
 
         public String filename;
         public EditorWindow(String name)
@@ -29,9 +29,9 @@ namespace Z80IDE
 
         void EditorWindow_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (Closing != null)
+            if (EditorClosing != null)
             {
-                Closing(this,new EventArgs());
+                EditorClosing(this, new EventArgs());
 
             }
 

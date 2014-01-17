@@ -78,6 +78,8 @@ namespace DockSample
                 parent.Nodes.Add(child);
 
             }
+
+            treeView1.ExpandAll();
         }
 
         private void removeFromSolutionToolStripMenuItem_Click(object sender, EventArgs e)
