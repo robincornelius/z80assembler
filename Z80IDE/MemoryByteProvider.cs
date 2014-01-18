@@ -10,6 +10,7 @@ namespace Z80IDE
     {
 
         Dictionary<long, byte> buffer = new Dictionary<long, byte>();
+        bool haschanges = false;
 
         public byte ReadByte(long index)
         { return buffer[index]; }
@@ -22,11 +23,13 @@ namespace Z80IDE
         public void WriteByte(long index, byte value)
         {
             buffer[index] = value;
+            haschanges = true;
         }
 
         public void clear()
         {
             buffer = new Dictionary<long, byte>();
+            haschanges = true;
         }
 
         /// <summary>
@@ -41,6 +44,8 @@ namespace Z80IDE
             {
                 buffer[index++] = b;
             }
+
+            haschanges = true;
 
         }
         /// <summary>
@@ -64,7 +69,7 @@ namespace Z80IDE
         /// <summary>
         /// True, when changes are done.
         /// </summary>
-        public bool HasChanges() { return false; }
+        public bool HasChanges() { return haschanges; }
         /// <summary>
         /// Applies changes.
         /// </summary>

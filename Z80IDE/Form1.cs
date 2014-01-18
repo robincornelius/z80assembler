@@ -27,38 +27,50 @@ namespace Z80IDE
         private List<string> _mru = new List<string>();
 
         public Form1()
-        {
-         
+        { 
             InitializeComponent();
 
             this.FormClosing += new FormClosingEventHandler(Form1_FormClosing);
             this.FormClosed += new FormClosedEventHandler(Form1_FormClosed);
+            this.MdiChildActivate += new EventHandler(Form1_MdiChildActivate);
 
             m_solutionExplorer = new DummySolutionExplorer(solution);
-        
+
 
             m_outputWindow.Show(dockPanel, DockState.DockBottom);
             m_solutionExplorer.Show(dockPanel, DockState.DockLeft);
 
-            //EditorWindow ew = new EditorWindow();
-            //ew.MdiParent = this;
-            //ew.DockPanel = this.dockPanel;
-            //ew.Show();
-            //editors.Add("Default.asm",ew);
-
             m_solutionExplorer.SelectedFile += new DummySolutionExplorer.SelectedFileEventHandler(m_solutionExplorer_SelectedFile);
 
-          //  solution.details.basefolder = "C:\\code\\MCSD100J";
-         //   solution.details.name = "MCSD100J";
-         //   solution.addfile("SU200.mac", "");
-         //   solution.addfile("TEST200.mac", "");
-
-            //solution.Serialize("myz802.sol");
-            //solution.Deserialize("myz802.sol");
-
             updatemru();
-           
-         
+
+            if (Properties.Settings.Default.WindowSize != null)
+            {
+                this.Size = Properties.Settings.Default.WindowSize;
+            }
+
+            if (Properties.Settings.Default.WindowLocation != null)
+            {
+                this.Location = Properties.Settings.Default.WindowLocation;
+            }
+
+        }
+
+
+        bool toolbarmerged = false;
+        void Form1_MdiChildActivate(object sender, EventArgs e)
+        {
+            if (this.ActiveMdiChild != null && this.ActiveMdiChild.GetType() == typeof(EditorWindow))
+            {
+                if(toolbarmerged==false)
+                    ToolStripManager.Merge((ToolStrip)this.ActiveMdiChild.Controls["toolStrip1"], toolStrip1);
+                toolbarmerged = true;
+            }
+            else
+            {
+                ToolStripManager.RevertMerge(toolStrip1.Name);
+                toolbarmerged = false;
+            }
         }
 
         void updatemru()
@@ -117,7 +129,10 @@ namespace Z80IDE
                 }
             }
 
-          
+            Properties.Settings.Default.WindowState = (int)this.WindowState;
+            Properties.Settings.Default.WindowSize = this.Size;
+            Properties.Settings.Default.WindowLocation = this.Location;
+
 
            // File.WriteAllLines(mruFilePath, _mru);
         }
@@ -131,9 +146,9 @@ namespace Z80IDE
             foreach (IDockContent d in dockPanel.Documents)
             {
                 //Only one solution supported at a time currently
-                if (d.GetType() == typeof(NewSolution) && e.rootnode == true)
+                if (d.GetType() == typeof(SolutionSettings) && e.rootnode == true)
                 {
-                    NewSolution ss = (NewSolution)d;
+                    SolutionSettings ss = (SolutionSettings)d;
                     ss.Show();
                     return;
                 }
@@ -152,7 +167,7 @@ namespace Z80IDE
 
            if(e.rootnode==true)
            {
-                NewSolution ss2 = new NewSolution(solution);
+                SolutionSettings ss2 = new SolutionSettings(solution);
                 ss2.MdiParent = this;
                 ss2.DockPanel = this.dockPanel;
                 ss2.Show();
@@ -166,14 +181,18 @@ namespace Z80IDE
          
         }
 
+
+
+
+
         public void loadfile(string name)
         {
 
-            EditorWindow ew = new EditorWindow(name);
+            EditorWindow ew = new EditorWindow(name,solution);
             string data = solution.loadfile(name,ew);
             
             ew.EditorClosing += new EditorWindow.EditorClosingHandler(ew_Closing);
-
+            ew.settext(data);
            
             ew.MdiParent = this;
             ew.DockPanel = this.dockPanel;
@@ -217,12 +236,45 @@ namespace Z80IDE
             m_outputWindow.clear();
             m_outputWindow.appendmsg("Starting build");
             bm = new BuildManager(solution, m_outputWindow);
-            bm.build();
+            bm.DoErr += new BuildManager.ErrHandler(bm_DoErr);
+            if(bm.build()==false)
+                showhex();
+        }
 
-            HexView hv = new HexView(bm.getoutput());
-            hv.MdiParent = this;
-            hv.DockPanel = this.dockPanel;
-            hv.Show();
+        void bm_DoErr(string file, int line, string description)
+        {
+            SelectedFileEventArgs e = new SelectedFileEventArgs(file,false);
+            m_solutionExplorer_SelectedFile(null, e);
+
+            ((EditorWindow)dockPanel.ActiveDocument).highlighterror(line);
+    
+
+        }
+
+        void showhex()
+        {
+            if (bm != null)
+            {
+                HexView hv = null;
+                foreach (IDockContent d in dockPanel.Documents)
+                {
+                    if(d.GetType() == typeof(HexView))
+                    {
+
+                        hv = (HexView)d;
+                        break;
+                    }
+                }
+
+                if(hv==null)
+                    hv = new HexView();
+
+                hv.setdata(bm.getoutput());
+                hv.MdiParent = this;
+                hv.DockPanel = this.dockPanel;
+                hv.Show();
+
+            }
         }
 
         private void openSolutionToolStripMenuItem_Click(object sender, EventArgs e)
@@ -281,7 +333,16 @@ namespace Z80IDE
 
         private void toolStripButton_outputwindow_Click(object sender, EventArgs e)
         {
-            
+            if (m_outputWindow == null)
+            {
+                m_outputWindow = new DummyOutputWindow();
+                m_outputWindow.Show(dockPanel, DockState.DockBottom);
+            }
+            else
+            {
+                m_outputWindow.Close();
+                m_outputWindow = null;
+            }
         }
 
         private void toolStripButton_solutionexplorer_Click(object sender, EventArgs e)
@@ -312,7 +373,7 @@ namespace Z80IDE
                 filename = string.Format("New {0}", index);
             }
             
-            EditorWindow ew = new EditorWindow(filename);
+            EditorWindow ew = new EditorWindow(filename,solution);
             ew.MdiParent = this;
             ew.DockPanel = this.dockPanel;
             ew.Show();
@@ -376,10 +437,13 @@ namespace Z80IDE
 
         }
 
+        private void toolStripButton_viewhex_Click(object sender, EventArgs e)
+        {
+            showhex();
 
-      
+        }
 
-      
+
 
         
     }

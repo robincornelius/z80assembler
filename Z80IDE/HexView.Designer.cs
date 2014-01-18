@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.hexBox1 = new Be.Windows.Forms.HexBox();
+            this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.SuspendLayout();
             // 
             // hexBox1
@@ -46,21 +47,32 @@
             this.hexBox1.UseFixedBytesPerLine = true;
             this.hexBox1.VScrollBarVisible = true;
             // 
+            // toolStrip1
+            // 
+            this.toolStrip1.Location = new System.Drawing.Point(0, 0);
+            this.toolStrip1.Name = "toolStrip1";
+            this.toolStrip1.Size = new System.Drawing.Size(292, 25);
+            this.toolStrip1.TabIndex = 1;
+            this.toolStrip1.Text = "toolStrip1";
+            // 
             // HexView
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(292, 266);
+            this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.hexBox1);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Name = "HexView";
             this.Text = "HexView";
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
         #endregion
 
         private Be.Windows.Forms.HexBox hexBox1;
+        private System.Windows.Forms.ToolStrip toolStrip1;
     }
 }

@@ -171,6 +171,7 @@
   <ItemGroup>
     <Content Include="syntax.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </Content>
     <EmbeddedResource Include="Images\New.ico" />
     <Content Include="Images\Open.ico" />

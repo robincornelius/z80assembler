@@ -15,21 +15,35 @@ namespace Z80IDE
         IOutput outtarget;
         private z80assembler assembler;
 
+        public delegate void ErrHandler(string file, int line, string description);
+        public event ErrHandler DoErr;
+
         public BuildManager(Solution sol, IOutput outtarget)
         {
             assembler  = new z80assembler();
             assembler.loadcommands();
 
+            assembler.DoErr += new z80assembler.ErrHandler(assembler_DoErr);
+
             this.solution = sol;
             this.outtarget = outtarget;
+        }
+
+        bool error = false;
+
+        void assembler_DoErr(string file, int line, string description)
+        {
+            error = true;
+            if (DoErr != null)
+                DoErr(file, line, description);
         }
 
       
        
 
-        public void build()
+        public bool build()
         {
-
+            error = false;
             assembler_Msg(" -------- BUILD STARTING -------------");
 
             assembler.basepath = solution.getbasepath();
@@ -47,7 +61,7 @@ namespace Z80IDE
                 {
                     assembler_Msg("\r\n Staring file " + f.name);
                     assembler.partialreset();
-                    assembler.parse(solution.loadfile(f.name));
+                    assembler.parse(solution.loadfile(f.name), f.name);
                     assembler.link(); // This is the per file link
                 }
             }
@@ -58,6 +72,7 @@ namespace Z80IDE
 
             assembler_Msg("\r\n --------DONE -------------");
 
+            return error;
         }
 
         void assembler_Msg(string msg)

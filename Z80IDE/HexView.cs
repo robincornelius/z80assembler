@@ -14,23 +14,23 @@ namespace Z80IDE
     public partial class HexView :  DockContent
     {
         MemoryByteProvider mb = new MemoryByteProvider();
-        public HexView(byte[] data)
+        public HexView()
         {
             InitializeComponent();
-           
+        }
+
+        public void setdata(byte[] data)
+        {
             hexBox1.ByteProvider = mb;
-           
-            long pos=0;
-            foreach(byte b in data)
+
+            long pos = 0;
+            foreach (byte b in data)
             {
                 mb.WriteByte(pos++, b);
-                
             }
-
-           
             hexBox1.Update();
-
-           
+            hexBox1.Invalidate();
+            
         }
     }
 }

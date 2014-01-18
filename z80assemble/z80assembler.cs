@@ -144,6 +144,7 @@ namespace z80assemble
         int org = 0;
         public int ramstart = 0;
         int ramptr = 0;
+        string currentfile;
 
         public Dictionary<int, byte> bytes;
         Dictionary<string, int> labels = new Dictionary<string, int>();
@@ -159,8 +160,16 @@ namespace z80assemble
         public delegate void MsgHandler(string msg);
         public event MsgHandler Msg;
 
+        public delegate void ErrHandler(string file, int line, string description);
+        public event ErrHandler DoErr;
+
         public string basepath;
 
+        public void senderror(string file, int line, string description)
+        {
+            if (DoErr != null)
+                DoErr(file, line, description);
+        }
 
         public void loadcommands()
         {
@@ -1266,7 +1275,9 @@ namespace z80assemble
                         }
 
                         string data = sr.ReadToEnd();
-                        parse(data);
+                        string oldfilename = currentfile;
+                        parse(data, value);
+                        currentfile = oldfilename;
 
                         //pushextern(value);
                     }
@@ -1560,6 +1571,7 @@ namespace z80assemble
                 catch (Exception ex)
                 {
 
+                    senderror(currentfile, lineno, ex.Message);
                     sendmsg(ex.Message + " On line " + lineno.ToString() + "\n" + line);
                     return;
                 }
@@ -1575,9 +1587,11 @@ namespace z80assemble
         string currentmacro;
         int lineno;
 
-        public void parse(string code)
+        public void parse(string code,string filename)
         {
-           
+
+            currentfile = filename;
+
            // reset();
            // textBox2.Clear();
 

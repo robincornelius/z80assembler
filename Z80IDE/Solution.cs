@@ -25,6 +25,7 @@ namespace Z80IDE
         public String name;
         public String path;
         public bool assemblefile = true;
+        public int order = 0;
     }
 
     public class solutiondetails
