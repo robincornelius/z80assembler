@@ -217,10 +217,10 @@ LD HL,nn	10	3	21 nn nn	3
 LD I,A	9	2	ED 47	2
 LD IX,(nn)	20	6	DD 2A nn nn	4
 LD IX,nn	14	4	DD 21 nn nn	4
-LD IXh,n	11	3	DD 26 nn	2
-LD IXh,p	8	2	DD 60+p	2
-LD IXl,n	11	3	DD 2E nn	2
-LD IXl,p	8	2	DD 68+p	2
+LD IXH,n	11	3	DD 26 nn	2
+LD IXH,p	8	2	DD 60+p	2
+LD IXL,n	11	3	DD 2E nn	2
+LD IXL,p	8	2	DD 68+p	2
 LD IY,(nn)	20	6	FD 2A nn nn	4
 LD IY,nn	14	4	FD 21 nn nn	4
 LD IYh,n	11	3	FD 26 nn	2

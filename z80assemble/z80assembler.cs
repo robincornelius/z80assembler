@@ -246,7 +246,7 @@ namespace z80assemble
         }
 
         public string[] validregs = { "A", "B", "C", "D", "E", "H", "L",
-                                      "AF" ,"BC" ,"DE", "HL", "IX", "IY" , "SP" ,"F","I","AF'","R"};
+                                      "AF" ,"BC" ,"DE", "HL", "IX", "IY" , "SP" ,"F","I","AF'","R","IXL","IXH"};
                                       
         public string[] validflags = { "NZ","Z","NC","P","PE","PO","M"};
 
@@ -323,12 +323,33 @@ namespace z80assemble
             if (uarg.Contains('+') && indirect==true)
             {
                 string[] bits = uarg.Split(new char[] { '+' });
+               
 
                 //We are expecting something like (IX+59)
                 
                 if(!regok(bits[0]))
                 {
-                    return argtype.INVALID;
+                    string[] xbits = xarg.Split(new char[] { '+' });
+                    if (labels.ContainsKey(xbits[0]))
+                    {
+                        int num;
+                        if (isnumber(xbits[1], out num))
+                        {
+                            imvalue = num; //FIX ME we need to use this at link time to offset
+                            if (indirect)
+                            {
+                                return argtype.INDIRECTLABEL;
+                            }
+                            else
+                            {
+                                return argtype.LABEL;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        return argtype.INVALID;
+                    }
                 }
 
                 if (setup && bits[1] == "O")
@@ -415,21 +436,17 @@ namespace z80assemble
 
             //label??
 
-            foreach(KeyValuePair<string, int> kvp in labels)
+            if(labels.ContainsKey(xarg))
             {
-                if (kvp.Key == xarg)
+                if (indirect)
                 {
-                    if (indirect)
-                    {
-                        imvalue = 0; // We don't know the address yet we do this at link time
-                        return argtype.INDIRECTLABEL;
-                    }
-                    else
-                    {
-                        imvalue = 0; // We don't know the address yet we do this at link time
-                        return argtype.LABEL;
-                    }
-                    
+                    imvalue = 0; // We don't know the address yet we do this at link time
+                    return argtype.INDIRECTLABEL;
+                }
+                else
+                {
+                    imvalue = 0; // We don't know the address yet we do this at link time
+                    return argtype.LABEL;
                 }
             }
 
@@ -483,9 +500,9 @@ namespace z80assemble
 
                 }
             }
-
             return argtype.INVALID;
         }
+
 
         public void pushbytes(byte[] pushbytes)
         {
@@ -533,7 +550,7 @@ namespace z80assemble
             else
             {
 
-                Console.WriteLine(String.Format("{0:x4} {1} \t\t {2}", org, line.Trim(), codes));
+                Console.WriteLine(String.Format("{0:X4} {1} \t\t {2}", org, line.Trim(), codes));
 
                 string[] bits = codes.Split(new char[] { ' ' });
 
@@ -570,13 +587,6 @@ namespace z80assemble
 
             //determine argtypes
 
-            if (arg1 == "CHEN" && command=="BIT")
-            {
-                int x = 0;
-                
-            }
-
-
             if (ismacro(command))
                 return "MACRO";
 
@@ -609,16 +619,6 @@ namespace z80assemble
             //fudge testing fixme remove later
             //these are actually all undocumented commands so not currently supporting
             if (arg1 == "IXp" || arg1 == "IYq" || arg2 == "IXp" || arg2 == "IYq")
-            {
-                return "00";
-            }
-
-            if (arg1 == "IXh" || arg1 == "IYh" || arg2 == "IXl" || arg2 == "IYl")
-            {
-                return "00";
-            }
-
-            if (arg1 == "IXl" || arg1 == "IYl" || arg2 == "IXh" || arg2 == "IYh")
             {
                 return "00";
             }
@@ -731,7 +731,18 @@ namespace z80assemble
                         }
                     }
 
-                   
+                    if (at1 == argtype.REG && at2== argtype.REG)
+                    {
+                        if (arg1.ToUpper() == "I" && c.arg1 != "I")
+                        {
+                            continue;
+                        }
+
+                        if (arg2.ToUpper() == "I" && c.arg2 != "I")
+                        {
+                            continue;
+                        }
+                    }
 
                     // if there are no args just return opcode
                     if (at1 == argtype.NOTPRESENT && at2 == argtype.NOTPRESENT)
@@ -776,15 +787,7 @@ namespace z80assemble
                                 opcode = opcode.Replace("oo", newstr);
                             }
 
-
-                            if (command == "BIT" && at1 == argtype.IMMEDIATE && at2 == argtype.REG)
-                            {
-                                Exception ex3 = new Exception("Sorry Bit n,r has not been finished");
-                                throw ex3;
-                            }
-
-                            //FIX ME not coping with opcode = "CB 40+8*b+r" as we need to add on r
-                            return  multiplyoffset(opcode, val1.ToString());
+                            return  multiplyoffset(opcode, val1.ToString(),arg2); //meh
 
                         }
 
@@ -948,13 +951,28 @@ namespace z80assemble
 
         }
 
-        public string multiplyoffset(string opstring,string sbits)
+        public string multiplyoffset(string opstring,string sbits,string reg=null)
         {
             //BIT b,(IX+o)	20	5	DD CB oo 46+8*b
 
             byte bits = byte.Parse(sbits, System.Globalization.NumberStyles.HexNumber);
 
-            Match match = Regex.Match(opstring, @"^([A-Z0-9 ]*) ([A-Z0-9]+)\+8\*b.*$");
+            //opstring = "CB C0+8*b+r"
+
+            Match match = Regex.Match(opstring, @"^([A-Z0-9 ]*) ([A-Z0-9]+)\+8\*(b)\+(r)$");
+            if (match.Success)
+            {
+                
+                string val = match.Groups[2].Value;
+
+                byte by = byte.Parse(val, System.Globalization.NumberStyles.HexNumber);
+                by = (byte)(by + 8 * bits);
+
+                return String.Format("{0} {1:X2}", match.Groups[1].Value, getregoffset(by,reg));
+
+            }
+
+            match = Regex.Match(opstring, @"^([A-Z0-9 ]*) ([A-Z0-9]+)\+8\*b.*$");
             if (match.Success)
             {
                 string val = match.Groups[2].Value;
@@ -1100,7 +1118,7 @@ namespace z80assemble
                       throw (e);
                   }
 
-                  return string.Format("{0} {1:x2} {2:x2}", match.Groups[1].Value, lo, hi);
+                  return string.Format("{0} {1:X2} {2:X2}", match.Groups[1].Value, lo, hi);
               }
 
 
@@ -1116,7 +1134,7 @@ namespace z80assemble
                       throw (e);
                   }
 
-                  return string.Format("{0} {1:x2}", match.Groups[1].Value,lo);
+                  return string.Format("{0} {1:X2}", match.Groups[1].Value,lo);
               }
 
               //special case to match the oo nn type commands (2 of)
@@ -1133,7 +1151,7 @@ namespace z80assemble
                           throw (e);
                       }
 
-                      return string.Format("{0} {1:x2} nn", match.Groups[1].Value, lo);
+                      return string.Format("{0} {1:X2} nn", match.Groups[1].Value, lo);
                   }
               }
 
@@ -1144,13 +1162,13 @@ namespace z80assemble
     
         public void fixlabel(string label)
         {
-            Console.WriteLine(String.Format("Fixed Label {0} at address {1:x4}", label, org));
+            Console.WriteLine(String.Format("Fixed Label {0} at address {1:X4}", label, org));
             labels[label]=org;
         }
 
         public void fixdatalabel(string label,int size)
         {
-            Console.WriteLine(String.Format("Fixed Label {0} at address {1:x4}", label, org));
+            Console.WriteLine(String.Format("Fixed Label {0} at address {1:X4}", label, org));
             labels[label] = ramptr;
             ramptr += size;
         }
@@ -1278,7 +1296,6 @@ namespace z80assemble
                         string oldfilename = currentfile;
                         parse(data, value);
                         currentfile = oldfilename;
-
                         //pushextern(value);
                     }
 
@@ -1412,7 +1429,6 @@ namespace z80assemble
                         codesegment = false;
                     }
 
-
                     if (codesegment == false)
                     {
                         int bytes=0;
@@ -1484,41 +1500,6 @@ namespace z80assemble
 
                         }
                     }
-
-                    /*
-                    //word size data
-                    if (directive.ToUpper() == "DW")
-                    {
-                        
-                            int val;
-                            argtype at = validatearg(value, out val);
-
-                            if (at == argtype.IMMEDIATE)
-                            {
-                                byte[] data = new byte[2];
-                                data[0] = (byte)(val >> 8);
-                                data[1] = (byte)(val & 0xff);
-
-                                //OK its good
-                                pushbytes(data);
-                            }
-
-                            if (at == argtype.LABEL)
-                            {
-                                byte[] data = new byte[2];
-                                data[0] = 0;
-                                data[1] = 0;
-                                linkrequiredat.Add(org, new linkrequiredatdata(16, value));
-                                pushbytes(data);
-                            }
-                            else
-                            {
-                                //WTF was that,, parse error;
-                            }
-
-                        
-                    }
-                     */
                 }
             }
 
@@ -1567,6 +1548,7 @@ namespace z80assemble
                 try
                 {
                     pushcommand(command, arg1, arg2, line);
+                    return;
                 }
                 catch (Exception ex)
                 {
@@ -1578,6 +1560,8 @@ namespace z80assemble
                 //textBox2.AppendText("\r\n");
 
             }
+
+            senderror(currentfile, lineno, "Unknown token ");
         }
 
 
