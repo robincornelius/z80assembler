@@ -441,7 +441,7 @@ namespace Tests
             z.pushlabel("test");
             z.fixlabel("test");
 
-            z.pushcommand("LD", "A", "(test)", " LD A,(test)");
+           // z.pushcommand("LD", "A", "(test)", " LD A,(test)");
             z.pushcommand("LD", "A", "(test+5)", " LD A,(test+5)");
             z.link();
 

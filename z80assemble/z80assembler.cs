@@ -198,8 +198,9 @@ namespace z80assemble
                      int bytecount = int.Parse(match.Groups[7].Value);
 
                      int outval;
-                     argtype at1 = validatearg(arg1, out outval,true);
-                     argtype at2 = validatearg(arg2, out outval,true);
+                     string argm1,argm2;
+                     argtype at1 = validatearg(arg1, out outval,out argm1,true);
+                     argtype at2 = validatearg(arg2, out outval, out argm2, true);
 
                     
                      
@@ -294,8 +295,9 @@ namespace z80assemble
             return false;
         }
 
-        public argtype validatearg(string arg, out int imvalue, bool setup=false)
+        public argtype validatearg(string arg, out int imvalue, out string arg2,bool setup=false)
         {
+            arg2 = arg;
             imvalue=0;
 
             if (arg == null || arg == "")
@@ -338,10 +340,12 @@ namespace z80assemble
                             imvalue = num; //FIX ME we need to use this at link time to offset
                             if (indirect)
                             {
+                                arg2 = xbits[0];
                                 return argtype.INDIRECTLABEL;
                             }
                             else
                             {
+                                arg2 = xbits[0];
                                 return argtype.LABEL;
                             }
                         }
@@ -491,11 +495,11 @@ namespace z80assemble
                 {
                     if (indirect)
                     {
-                        return (validatearg("("+kvp.Value+")", out imvalue));
+                        return (validatearg("("+kvp.Value+")", out imvalue,out arg));
                     }
                     else
                     {
-                        return (validatearg(kvp.Value, out imvalue));
+                        return (validatearg(kvp.Value, out imvalue,out arg2));
                     }
 
                 }
@@ -520,7 +524,7 @@ namespace z80assemble
             if (arg1 != null && arg1.ToUpper() == "EQU")
             {
                 int num;
-                if (validatearg(arg2, out num) == argtype.IMMEDIATE)
+                if (validatearg(arg2, out num,out arg2) == argtype.IMMEDIATE)
                 {
                     defines.Add(command, num);
                 }
@@ -592,8 +596,8 @@ namespace z80assemble
 
             int val1;
             int val2;
-            argtype at1 = validatearg(arg1,out val1,false);
-            argtype at2 = validatearg(arg2,out val2,false);
+            argtype at1 = validatearg(arg1,out val1,out arg1,false);
+            argtype at2 = validatearg(arg2, out val2, out arg2,false);
 
             command = command.ToUpper();
 
