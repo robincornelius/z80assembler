@@ -277,14 +277,14 @@ namespace z80assemble
                 return true;
             }
 
-            match = Regex.Match(data, @"^([0-9A-Fa-f]+)H$"); //FIX ME IGNORE CASE
+            match = Regex.Match(data, @"^([0-9A-Fa-f]+)[Hh]$"); 
             if (match.Success)
             {
                 num = Convert.ToInt16(match.Groups[1].Value, 16);
                 return true;
             }
 
-            match = Regex.Match(data, @"^([01]*)B+$"); //FIX ME IGNORE CASE
+            match = Regex.Match(data, @"^([01]*)[Bb]+$");
             if (match.Success)
             {
                 num = Convert.ToInt16(match.Groups[1].Value, 2);
@@ -468,7 +468,6 @@ namespace z80assemble
                         return argtype.IMMEDIATE;
                     }
                 }
-
             }
 
             foreach(string s in externs)
@@ -639,14 +638,10 @@ namespace z80assemble
                 throw (e);
             }
 
-            // FIXME LD A,R generates wrong opcode         
-
             foreach (command c in commandtable)
             {
-
                 if (c.cmd == command)
-
-                    if ((at1 == c.at1 || (at1 == argtype.LABEL) || (at1 == argtype.INDIRECTLABEL)) && (at2 == c.at2 || (at2 == argtype.LABEL)) || (at2 == argtype.INDIRECTLABEL))
+                if ((at1 == c.at1 || (at1 == argtype.LABEL) || (at1 == argtype.INDIRECTLABEL)) && (at2 == c.at2 || (at2 == argtype.LABEL)) || (at2 == argtype.INDIRECTLABEL))
                 {
                     
                     // If argument 1 is a register make sure it matches (also apply to indirect)
@@ -1264,11 +1259,76 @@ namespace z80assemble
 
         }
 
+  
         public void pass1(string[] lines)
         {
+
+            int pos = -1;
             foreach (string linex in lines)
             {
+                pos++;
                 string line = linex;
+
+                //comment line or null line
+                if (line.Length == 0)
+                {
+                    return;
+                }
+
+                if (line[0] == ';')
+                {
+                    return;
+                }
+
+                if (line[0] == '\r' || line[0] == '\n')
+                {
+                    return;
+                }
+
+                Match match5 = Regex.Match(line, @"^[ \t]+;.*");
+                if (match5.Success)
+                {
+                    return;
+                }
+
+                Match commentmatch = Regex.Match(line, @"^(.*);(.*)");
+                if (commentmatch.Success)
+                {
+                    line = commentmatch.Groups[1].Value;
+                }
+
+                // Do any maths that we find
+
+                Match matchmath = Regex.Match(line, @"([0-9]+)[ \t]*([+\-*/])[ \t]*([0-9]+)");
+                if (matchmath.Success)
+                {
+                    int val1 = int.Parse(matchmath.Groups[1].Value);
+                    string op = matchmath.Groups[2].Value;
+                    int val2 = int.Parse(matchmath.Groups[3].Value);
+
+                    int outv = 0;
+
+                    switch (op)
+                    {
+                        case "+":
+                            outv = val1+val2;
+                            break;
+                        case "-":
+                            outv = val1 - val2;
+                            break;
+                        case "*":
+                            outv = val1 * val2;
+                            break;
+                        case "/":
+                            outv = val1 / val2;
+                            break;
+
+                    }
+
+                    line = Regex.Replace(line, @"([0-9]+[ \t]*[+\-*/][ \t]*[0-9]+)", outv.ToString());
+                    lines[pos] = line;
+
+                }
 
                 Match match2 = Regex.Match(line, @"^[ \t]+\.([A-Za-z0-9]+)[ \t]+([A-Za-z0-9.]*)[ \t\r]*");
                 if (match2.Success)

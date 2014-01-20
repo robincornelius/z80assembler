@@ -438,12 +438,30 @@ namespace Tests
             Debug.Assert(z.getopcodes("XOR","b","") == "A8");
 
 
+            //Check labels work
+            z.pushcommand("nop", "", "", "");
+            z.pushcommand("nop", "", "", "");
+            z.pushcommand("nop", "", "", "");
+            z.pushcommand("nop", "", "", "");
+            z.pushcommand("nop", "", "", "");
             z.pushlabel("test");
             z.fixlabel("test");
-
-           // z.pushcommand("LD", "A", "(test)", " LD A,(test)");
-            z.pushcommand("LD", "A", "(test+5)", " LD A,(test+5)");
+            z.pushcommand("LD", "A", "(test)", " LD A,(test)");
             z.link();
+            // Test is at address 5 so expect 05 00 jump address
+            Debug.Assert(z.bytes[6]==05);
+            Debug.Assert(z.bytes[7] == 00);
+
+
+            z.pushcommand("LD", "HL", "test", " LD A,(test)");
+            z.parse(" LD HL,5+5", "null");
+
+            //z.pushcommand("LD", "HL", "test+5", " LD A,(test)");
+
+            //Broken
+            //z.pushcommand("SET", "3", "(IX+test)", "");
+            //z.link();
+            
 
            
    
