@@ -5,6 +5,7 @@ using System.Text;
 using System.Collections;
 using System.Text.RegularExpressions;
 using System.IO;
+using System.Diagnostics;
 
 namespace z80assemble
 {
@@ -56,18 +57,20 @@ namespace z80assemble
 
     public class linkrequiredatdata
     {
-        public linkrequiredatdata(int size, string label, bool realitive=false, int org=0)
+        public linkrequiredatdata(int size, string label, int offset, bool realitive=false, int org=0)
         {
             this.size = size;
             this.label = label;
             this.realitive = realitive;
             this.org = org;
+            this.offset = offset;
 
         }
         public int size;
         public string label;
         public bool realitive;
         public int org;
+        public int offset;
     }
 
     public class macro
@@ -145,6 +148,7 @@ namespace z80assemble
         public int ramstart = 0;
         int ramptr = 0;
         string currentfile;
+        public bool matchbreak = false;
 
         public Dictionary<int, byte> bytes;
         Dictionary<string, int> labels = new Dictionary<string, int>();
@@ -743,6 +747,11 @@ namespace z80assemble
                         }
                     }
 
+                    if (matchbreak)
+                    {
+                        Debugger.Break();
+                    }
+
                     // if there are no args just return opcode
                     if (at1 == argtype.NOTPRESENT && at2 == argtype.NOTPRESENT)
                     {
@@ -873,15 +882,15 @@ namespace z80assemble
 
                     if (at1 == argtype.INDIRECTLABEL && at2 == argtype.REG)
                     {
-                        linkrequiredat.Add(org + 1, new linkrequiredatdata(16,arg1.Trim(new char[] { '(', ')' })));
+                        linkrequiredat.Add(org + 1, new linkrequiredatdata(16,arg1.Trim(new char[] { '(', ')' }),val1));
                         arg1 = arg1.Trim(new char[]{'(',')'});
 
                         return c.opcode.Replace('n','0');
                     }
 
                     if (at2 == argtype.INDIRECTLABEL && at1 == argtype.REG)
-                    {
-                        linkrequiredat.Add(org + 1, new linkrequiredatdata(16,arg2.Trim(new char[] { '(', ')' })));
+                    { 
+                        linkrequiredat.Add(org + 1, new linkrequiredatdata(16,arg2.Trim(new char[] { '(', ')' }),val2));
                         return c.opcode.Replace('n', '0');
                     }
 
@@ -1067,7 +1076,7 @@ namespace z80assemble
             {
                 //fix me wrong length?
                 int length = match.Groups[1].Value.Length/2;
-                linkrequiredat.Add(org + length, new linkrequiredatdata(16,label.Trim(new char[] { '(', ')' })));
+                linkrequiredat.Add(org + length, new linkrequiredatdata(16,label.Trim(new char[] { '(', ')' }),0));
                 Console.WriteLine(String.Format("Link required at address {0:x} for label {1}",org+length,label));
                 return(string.Format("{0} 00 00",match.Groups[1].Value));
             }
@@ -1079,7 +1088,7 @@ namespace z80assemble
                 //fix me wrong length?
                 int length = match2.Groups[1].Value.Length / 2;
 
-                linkrequiredatdata lrd = new linkrequiredatdata(8, label.Trim(new char[] { '(', ')' }), true, org + length+1); //FIX ME +1??
+                linkrequiredatdata lrd = new linkrequiredatdata(8, label.Trim(new char[] { '(', ')' }), 0,true, org + length+1); //FIX ME +1??
                 linkrequiredat.Add(org + length, lrd);
                 Console.WriteLine(String.Format("Link required at address {0:x} for label {1}", org + length, label));
                 return (string.Format("{0} 00", match2.Groups[1].Value));
@@ -1089,7 +1098,7 @@ namespace z80assemble
             if (match3.Success)
             {
                 int length = match3.Groups[1].Value.Length / 2;
-                linkrequiredat.Add(org + length, new linkrequiredatdata(8,label.Trim(new char[] { '(', ')' })));
+                linkrequiredat.Add(org + length, new linkrequiredatdata(8,label.Trim(new char[] { '(', ')' }),0));
                 Console.WriteLine(String.Format("Link required at address {0:x} for label {1}", org + length, label));
                 return (string.Format("{0} 00", match3.Groups[1].Value));
             }
@@ -1211,7 +1220,7 @@ namespace z80assemble
                         return;
                     }
 
-                    int val = labels[label];
+                    int val = labels[label]+data.offset;
 
                     if (data.size == 16)
                     {
@@ -1553,7 +1562,7 @@ namespace z80assemble
                                 }
                                 else
                                 {
-                                    linkrequiredatdata d = new linkrequiredatdata(2,value);
+                                    linkrequiredatdata d = new linkrequiredatdata(2,value,0);
                                     linkrequiredat.Add(org, d);
                                     org += 2;
                                 }
@@ -1578,7 +1587,7 @@ namespace z80assemble
                 }
             }
 
-            Match match3 = Regex.Match(line, @"^[ \t]+([A-Za-z0-9]+)[ \t]*(.*)[ \n\r\t]*(;*.*)");
+               Match match3 = Regex.Match(line, @"^[ \t]+([A-Za-z0-9]+)[ \t]*(.*)[ \n\r\t]*(;*.*)");
             if (match3.Success)
             {
                 string arg1 = null;

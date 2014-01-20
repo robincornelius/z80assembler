@@ -449,18 +449,40 @@ namespace Tests
             z.pushcommand("LD", "A", "(test)", " LD A,(test)");
             z.link();
             // Test is at address 5 so expect 05 00 jump address
-            Debug.Assert(z.bytes[6]==05);
+            Debug.Assert(z.bytes[6] == 05);
             Debug.Assert(z.bytes[7] == 00);
 
 
-            z.pushcommand("LD", "HL", "test", " LD A,(test)");
-            z.parse(" LD HL,5+5", "null");
+            z.parse(" LD HL,test","");
+            Debug.Assert(z.bytes[8] == 0x21);
+            Debug.Assert(z.bytes[9] == 00);
+            Debug.Assert(z.bytes[10] == 00);
+            z.link();
+            Debug.Assert(z.bytes[9] == 0x05);
+            Debug.Assert(z.bytes[10] == 00);
 
-            //z.pushcommand("LD", "HL", "test+5", " LD A,(test)");
+            z.parse(" LD HL,5+5", "");
+            Debug.Assert(z.bytes[11] == 0x21);
+            Debug.Assert(z.bytes[12] == 0x0A);
+            Debug.Assert(z.bytes[13] == 0x00);
 
-            //Broken
-            //z.pushcommand("SET", "3", "(IX+test)", "");
-            //z.link();
+            //z.matchbreak = true;
+            z.parse("    LD HL,(test+5)", "");
+            z.link();
+            Debug.Assert(z.bytes[14] == 0x2A);
+            Debug.Assert(z.bytes[15] == 0x0A);
+            Debug.Assert(z.bytes[16] == 0x00);
+
+
+            // DD CB oo C6+8*b
+            z.parse( "    SET 3, (IX+5)","");
+            Debug.Assert(z.bytes[17] == 0xDD);
+            Debug.Assert(z.bytes[18] == 0xCB);
+            Debug.Assert(z.bytes[19] == 0x05);
+            Debug.Assert(z.bytes[20] == 0xC6+8*3);
+ 
+
+            z.link();
             
 
            
