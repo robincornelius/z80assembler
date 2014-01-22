@@ -108,6 +108,9 @@ namespace z80assemble
         
                 for (int argi = 0; argi < args.Count; argi++)
                 {
+                    if (args[argi].Length == 0 || inargs[argi].Length == 0)
+                        continue;
+
                     line=line.Replace(args[argi],inargs[argi]);
                 }
 
@@ -203,8 +206,11 @@ namespace z80assemble
 
                      int outval;
                      string argm1,argm2;
-                     argtype at1 = validatearg(arg1, out outval,out argm1,true);
-                     argtype at2 = validatearg(arg2, out outval, out argm2, true);
+                     bool arg1defer = false;
+                     bool arg2defer = false;
+
+                     argtype at1 = validatearg(arg1, out outval,out argm1,out arg1defer,true);
+                     argtype at2 = validatearg(arg2, out outval, out argm2, out arg2defer, true);
 
                     
                      
@@ -232,7 +238,8 @@ namespace z80assemble
 
         public void partialreset()
         {
-            labels = new Dictionary<string, int>();
+            labels.Clear();
+            equs.Clear();
             lineno = 0;
         }
 
@@ -295,14 +302,23 @@ namespace z80assemble
                 return true;
             }
 
+            //Not found may be an EQU
+
+            if (equs.ContainsKey(data))
+            {
+                return isnumber(equs[data], out num);
+            }
+
 
             return false;
         }
 
-        public argtype validatearg(string arg, out int imvalue, out string arg2,bool setup=false)
+        public argtype validatearg(string arg, out int imvalue, out string arg2,out bool defer,bool setup=false)
         {
             arg2 = arg;
             imvalue=0;
+            defer = false;
+
 
             if (arg == null || arg == "")
                 return argtype.NOTPRESENT;
@@ -446,6 +462,7 @@ namespace z80assemble
 
             if(labels.ContainsKey(xarg))
             {
+                defer = true;
                 if (indirect)
                 {
                     imvalue = 0; // We don't know the address yet we do this at link time
@@ -476,6 +493,7 @@ namespace z80assemble
 
             foreach(string s in externs)
             {
+                defer = true;
                 if (s == xarg)
                 {
                     imvalue = 0; // We don't know the address yet we do this at link time
@@ -498,15 +516,18 @@ namespace z80assemble
                 {
                     if (indirect)
                     {
-                        return (validatearg("("+kvp.Value+")", out imvalue,out arg));
+                        return (validatearg("("+kvp.Value+")", out imvalue,out arg,out defer));
                     }
                     else
                     {
-                        return (validatearg(kvp.Value, out imvalue,out arg2));
+                        return (validatearg(kvp.Value, out imvalue, out arg2, out defer));
                     }
 
                 }
             }
+
+            //if(setup==false)
+            // Debugger.Break();
             return argtype.INVALID;
         }
 
@@ -526,8 +547,9 @@ namespace z80assemble
             //Special handlers here that are not real op codes
             if (arg1 != null && arg1.ToUpper() == "EQU")
             {
+                bool defer = false;
                 int num;
-                if (validatearg(arg2, out num,out arg2) == argtype.IMMEDIATE)
+                if (validatearg(arg2, out num,out arg2,out defer) == argtype.IMMEDIATE)
                 {
                     defines.Add(command, num);
                 }
@@ -538,7 +560,6 @@ namespace z80assemble
                 }
                 return;
             }
-
 
             string codes = getopcodes(command, arg1, arg2, line);
 
@@ -599,8 +620,15 @@ namespace z80assemble
 
             int val1;
             int val2;
-            argtype at1 = validatearg(arg1,out val1,out arg1,false);
-            argtype at2 = validatearg(arg2, out val2, out arg2,false);
+
+            bool arg1defer = false;
+            bool arg2defer = false;
+
+          //  if (arg2 == "ISTACK")
+            //    Debugger.Break();
+
+            argtype at1 = validatearg(arg1,out val1,out arg1,out arg1defer,false);
+            argtype at2 = validatearg(arg2, out val2, out arg2,out arg2defer,false);
 
             command = command.ToUpper();
 
@@ -924,7 +952,7 @@ namespace z80assemble
         public  List<string> processmacro(string line)
         {
             line = line.Trim();
-            Match match = Regex.Match(line, @"^([A-Za-z0-9_$-]*)[ \t]+([A-Za-z0-9(),$_-]+)?");
+            Match match = Regex.Match(line, @"^([A-Za-z0-9_$-]*)[ \t]*([A-Za-z0-9(),$_-]*)?");
             if (match.Success)
             {
                 string command = match.Groups[1].Value;
@@ -1281,23 +1309,23 @@ namespace z80assemble
                 //comment line or null line
                 if (line.Length == 0)
                 {
-                    return;
+                    continue ;
                 }
 
                 if (line[0] == ';')
                 {
-                    return;
+                    continue;
                 }
 
                 if (line[0] == '\r' || line[0] == '\n')
                 {
-                    return;
+                    continue;
                 }
 
                 Match match5 = Regex.Match(line, @"^[ \t]+;.*");
                 if (match5.Success)
                 {
-                    return;
+                    continue;
                 }
 
                 Match commentmatch = Regex.Match(line, @"^(.*);(.*)");
@@ -1339,12 +1367,13 @@ namespace z80assemble
 
                 }
 
-                Match match2 = Regex.Match(line, @"^[ \t]+\.([A-Za-z0-9]+)[ \t]+([A-Za-z0-9.]*)[ \t\r]*");
+                Match match2 = Regex.Match(line, @"^([A-Za-z0-9_]*)[ \t]+\.([A-Za-z0-9]+)[ \t]+([A-Za-z0-9.]*)[ \t\r]*");
                 if (match2.Success)
                 {
                     //textBox2.AppendText("Found Preprocessor " + match2.Groups[1].Value + " => " + match2.Groups[2].Value + "\r\n");
-                    string directive = match2.Groups[1].Value;
-                    string value = match2.Groups[2].Value;
+                    string label = match2.Groups[1].Value;
+                    string directive = match2.Groups[2].Value;
+                    string value = match2.Groups[3].Value;
 
                     if (directive.ToUpper() == "EXTERN")
                     {
@@ -1372,10 +1401,27 @@ namespace z80assemble
                         //pushextern(value);
                     }
 
+                    if (directive.ToUpper() == "EQU")
+                    {
+                        equs.Add(label, value);
+
+                    }
+
+                }
+
+                //Non directive equ *sigh*
+                Match matchequ = Regex.Match(line, @"^([A-Za-z0-9_]*)[ \t]+EQU[ \t]+([A-Za-z0-9.]*)[ \t\r]*");
+                if (matchequ.Success)
+                {
+                    string label = matchequ.Groups[1].Value;
+                  
+                    string value = matchequ.Groups[2].Value;
+
+                    equs.Add(label, value);
                 }
 
                 // Labels
-                Match match = Regex.Match(line, @"^([A-Za-z0-9]+):(.*)");
+                Match match = Regex.Match(line, @"^([A-Za-z0-9_]+):(.*)");
                 if (match.Success)
                 {
                     string key = match.Groups[1].Value;
@@ -1402,33 +1448,21 @@ namespace z80assemble
                return;
             }
 
-            if (line[0] == ';')
-            {
-                //textBox2.AppendText("**** \r\n");
-                return;
-            }
-
-            if (line[0] == '\r' || line[0] == '\n')
-            {
-                //textBox2.AppendText("\r\n");
-                return;
-            }
-
-            Match match5 = Regex.Match(line, @"^[ \t]+;.*");
-            if (match5.Success)
-            {
-                //textBox2.AppendText("\r\n");
-                return;
-            }
-
             Match commentmatch = Regex.Match(line, @"^(.*);(.*)");
             if (commentmatch.Success)
             {
-                line = commentmatch.Groups[1].Value;
+                parseline(commentmatch.Groups[1].Value);
+                return;
             }
 
+            Match whitematch = Regex.Match(line, @"^[ \t\r\n\v]*$");
+            if (whitematch.Success)
+            {
+                return;
+            }
+         
             // Labels
-            Match match = Regex.Match(line, @"^([A-Za-z0-9]+):(.*)");
+            Match match = Regex.Match(line, @"^([A-Za-z0-9_]+):(.*)");
             if (match.Success)
             {
                 string key = match.Groups[1].Value;
@@ -1443,7 +1477,8 @@ namespace z80assemble
                     currentdatalabel = key;
                 }
 
-                line = rest;
+                parseline(rest);
+                return;
             }
 
 
@@ -1485,12 +1520,21 @@ namespace z80assemble
 
             //Directives again
             {
-                Match match2 = Regex.Match(line, @"^[ \t]+\.([A-Za-z0-9]+)[ \t]*([A-Za-z0-9.]*)[ \t\r]*");
+                Match match2 = Regex.Match(line, @"^([A-Za-z0-9_]*)[ \t]+\.([A-Za-z0-9]+)[ \t]*([A-Za-z0-9.]*)[ \t\r]*");
                 if (match2.Success)
                 {
                     //textBox2.AppendText("Found Preprocessor " + match2.Groups[1].Value + " => " + match2.Groups[2].Value + "\r\n");
-                    string directive = match2.Groups[1].Value;
-                    string value = match2.Groups[2].Value;
+                    string directive = match2.Groups[2].Value;
+                    string value = match2.Groups[3].Value;
+
+                    if (directive.ToUpper() == "INCLUDE")
+                        return; //Already done
+
+                    if (directive.ToUpper() == "EXTERN")
+                        return; //Already done
+
+                    if (directive.ToUpper() == "EQU")
+                        return;
 
                     if (directive.ToUpper() == "CODE")
                     {
@@ -1546,8 +1590,10 @@ namespace z80assemble
                                 }
                                 else
                                 {
-                                    Exception e = new Exception("Unable to parse " + value);
-                                    throw e;
+                                   
+                                    //Exception e = new Exception("Unable to parse " + value);
+                                    //throw e;
+                                    
                                 }
                               
                                 break;
@@ -1572,22 +1618,23 @@ namespace z80assemble
                                 break;
 
                         }
+
                     }
-                }
-            }
-
-            {
-
-                Match equmatch = Regex.Match(line, @"^([A-Za-z0-9_$-]+)[ \t]*.equ[ \t]+([A-Za-z0-9]*)");
-                if (equmatch.Success)
-                {
-                    equs[equmatch.Groups[1].Value] = equmatch.Groups[2].Value;
-                    //sendmsg(String.Format("Found equ {0} -> {1} ", equmatch.Groups[1].Value, equmatch.Groups[2].Value));
                     return;
                 }
+
+               
             }
 
-               Match match3 = Regex.Match(line, @"^[ \t]+([A-Za-z0-9]+)[ \t]*(.*)[ \n\r\t]*(;*.*)");
+             Match matchequ = Regex.Match(line, @"^([A-Za-z0-9_]*)[ \t]+EQU[ \t]+([A-Za-z0-9.]*)[ \t\r]*");
+             if (matchequ.Success)
+             {
+                 return;
+             }
+
+
+          
+            Match match3 = Regex.Match(line, @"^\s+([A-Za-z0-9]+)\s*(.*)\s*(;*.*)");
             if (match3.Success)
             {
                 string arg1 = null;
@@ -1608,7 +1655,7 @@ namespace z80assemble
                     }
                     else
                     {
-                        Match match4 = Regex.Match(p, @"[ \t]*([()a-zA-Z0-9+]+)[ \t]*[, ]*[ \t]*([()a-zA-Z0-9+']+)[ \t\r]*");
+                        Match match4 = Regex.Match(p, @"[ \t]*([()a-zA-Z0-9+_]+)[ \t]*[, ]*[ \t]*([()a-zA-Z0-9+'_]+)[ \t\r]*");
                         if (match4.Success)
                         {
                             // textBox2.AppendText(" arguments \"" + match4.Groups[1].Value + "\" -- \"" + match4.Groups[2].Value + "\"");

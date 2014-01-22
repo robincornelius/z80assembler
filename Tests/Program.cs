@@ -473,7 +473,6 @@ namespace Tests
             Debug.Assert(z.bytes[15] == 0x0A);
             Debug.Assert(z.bytes[16] == 0x00);
 
-
             // DD CB oo C6+8*b
             z.parse( "    SET 3, (IX+5)","");
             Debug.Assert(z.bytes[17] == 0xDD);

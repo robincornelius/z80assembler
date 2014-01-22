@@ -247,7 +247,8 @@ namespace Z80IDE
             m_solutionExplorer_SelectedFile(null, e);
 
             ((EditorWindow)dockPanel.ActiveDocument).highlighterror(line);
-    
+
+            m_outputWindow.appendmsg(String.Format("ERROR: {0} {1} {2}", file, line+1, description));
 
         }
 
