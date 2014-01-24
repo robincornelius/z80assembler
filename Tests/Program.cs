@@ -481,6 +481,7 @@ namespace Tests
             Debug.Assert(z.bytes[20] == 0xC6+8*3);
  
 
+
             z.link();
             
 

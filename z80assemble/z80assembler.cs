@@ -309,6 +309,16 @@ namespace z80assemble
                 return isnumber(equs[data], out num);
             }
 
+            if (labels.ContainsKey(data))
+            {
+                //MEH will not work for unfixed labels
+                if (labels[data] != 0)
+                {
+                    num = labels[data];
+                    return true;
+                }
+            }
+
 
             return false;
         }
@@ -1296,6 +1306,40 @@ namespace z80assemble
 
         }
 
+        public int domath(string data)
+        {
+            int outv = 0;
+            Match matchmath = Regex.Match(data, @"([a-zA-Z0-9_]+)[ \t]*([+\-*/])[ \t]*([a-zA-Z0-9_]+)");
+            if (matchmath.Success)
+            {
+                int val1,val2;
+                isnumber(matchmath.Groups[1].Value, out val1);
+                isnumber(matchmath.Groups[3].Value, out val2);
+
+                string op = matchmath.Groups[2].Value;
+               
+                switch (op)
+                {
+                    case "+":
+                        outv = val1 + val2;
+                        break;
+                    case "-":
+                        outv = val1 - val2;
+                        break;
+                    case "*":
+                        outv = val1 * val2;
+                        break;
+                    case "/":
+                        outv = val1 / val2;
+                        break;
+
+                }
+
+            }
+
+            return outv;
+        }
+
   
         public void pass1(string[] lines)
         {
@@ -1336,34 +1380,35 @@ namespace z80assemble
 
                 // Do any maths that we find
 
-                Match matchmath = Regex.Match(line, @"([0-9]+)[ \t]*([+\-*/])[ \t]*([0-9]+)");
+                Match matchmath = Regex.Match(line, @"([0-9a-zA-Z_]+)[ \t]*([+\-*/])[ \t]*([0-9a-zA-Z_]+)");
                 if (matchmath.Success)
                 {
-                    int val1 = int.Parse(matchmath.Groups[1].Value);
-                    string op = matchmath.Groups[2].Value;
-                    int val2 = int.Parse(matchmath.Groups[3].Value);
-
-                    int outv = 0;
-
-                    switch (op)
+                    int val1, val2;
+                    if (isnumber(matchmath.Groups[1].Value, out val1) && isnumber(matchmath.Groups[3].Value,out val2))
                     {
-                        case "+":
-                            outv = val1+val2;
-                            break;
-                        case "-":
-                            outv = val1 - val2;
-                            break;
-                        case "*":
-                            outv = val1 * val2;
-                            break;
-                        case "/":
-                            outv = val1 / val2;
-                            break;
+                        string op = matchmath.Groups[2].Value;
+                        int outv = 0;
 
+                        switch (op)
+                        {
+                            case "+":
+                                outv = val1 + val2;
+                                break;
+                            case "-":
+                                outv = val1 - val2;
+                                break;
+                            case "*":
+                                outv = val1 * val2;
+                                break;
+                            case "/":
+                                outv = val1 / val2;
+                                break;
+
+                        }
+
+                        line = Regex.Replace(line, @"([0-9a-zA-Z_]+[ \t]*[+\-*/][ \t]*[0-9a-zA-Z_]+)", outv.ToString());
+                        lines[pos] = line;
                     }
-
-                    line = Regex.Replace(line, @"([0-9]+[ \t]*[+\-*/][ \t]*[0-9]+)", outv.ToString());
-                    lines[pos] = line;
 
                 }
 
@@ -1520,7 +1565,7 @@ namespace z80assemble
 
             //Directives again
             {
-                Match match2 = Regex.Match(line, @"^([A-Za-z0-9_]*)[ \t]+\.([A-Za-z0-9]+)[ \t]*([A-Za-z0-9.]*)[ \t\r]*");
+                Match match2 = Regex.Match(line, @"^([A-Za-z0-9_]*)[ \t]+\.([A-Za-z0-9]+)[ \t]*([A-Za-z0-9]*)[ \t\r]*");
                 if (match2.Success)
                 {
                     //textBox2.AppendText("Found Preprocessor " + match2.Groups[1].Value + " => " + match2.Groups[2].Value + "\r\n");
@@ -1555,7 +1600,12 @@ namespace z80assemble
                              bytes=1;
                         if (directive.ToUpper() == "DS")
                         {
-                            int size = int.Parse(value);
+                            int size = 0;
+                            if (!int.TryParse(value, out size))
+                            {
+                                size = domath(value);
+                            }
+
                             bytes = size; //FIX ME DETECT HERE;
                         }
 
