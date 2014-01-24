@@ -1435,14 +1435,17 @@ namespace z80assemble
                         }
                         catch (Exception e)
                         {
-                            sendmsg("Failed to open include file " + value);
+                            senderror(currentfile,lineno,"Failed to open include file " + value);
                             return;
                         }
 
                         string data = sr.ReadToEnd();
                         string oldfilename = currentfile;
+                        int oldlineno = lineno;
+                        lineno = 0;
                         parse(data, value);
                         currentfile = oldfilename;
+                        lineno = oldlineno;
                         //pushextern(value);
                     }
 
@@ -1767,7 +1770,15 @@ namespace z80assemble
 
            foreach (string linex in lines)
            {
-               parseline(linex);
+               try
+               {
+                   parseline(linex);
+               }
+               catch (Exception e)
+               {
+                   senderror(filename,lineno,e.Message); 
+
+               }
                lineno++;
                //Look at character at start of line and decide action
            }
