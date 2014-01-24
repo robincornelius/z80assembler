@@ -536,6 +536,11 @@ namespace z80assemble
                 }
             }
 
+            if (domath(xarg, out imvalue))
+            {
+                return argtype.IMMEDIATE;
+            }
+
             //if(setup==false)
             // Debugger.Break();
             return argtype.INVALID;
@@ -634,8 +639,10 @@ namespace z80assemble
             bool arg1defer = false;
             bool arg2defer = false;
 
-          //  if (arg2 == "ISTACK")
-            //    Debugger.Break();
+            if (arg2 == "CHLEVS+1")
+                Debugger.Break();
+
+
 
             argtype at1 = validatearg(arg1,out val1,out arg1,out arg1defer,false);
             argtype at2 = validatearg(arg2, out val2, out arg2,out arg2defer,false);
@@ -1151,6 +1158,11 @@ namespace z80assemble
               byte hi = (byte)(value >> 8);
               byte lo = (byte)value;
 
+              if (target == 'o')
+              {
+                  value=org-value;
+              }
+
               string regex = @"^([A-Z0-9 ]*) xx xx$";
               regex = regex.Replace('x', target);
               
@@ -1222,7 +1234,7 @@ namespace z80assemble
         public void pushlabel(string label)
         {
             Console.WriteLine(String.Format("Found Label {0}",label));
-            labels.Add(label, org);
+            labels.Add(label, 0);
         }
 
         public void fixram(string label,int size)
@@ -1306,9 +1318,9 @@ namespace z80assemble
 
         }
 
-        public int domath(string data)
+        public bool domath(string data, out int outv)
         {
-            int outv = 0;
+            outv = 0;
             Match matchmath = Regex.Match(data, @"([a-zA-Z0-9_]+)[ \t]*([+\-*/])[ \t]*([a-zA-Z0-9_]+)");
             if (matchmath.Success)
             {
@@ -1335,9 +1347,11 @@ namespace z80assemble
 
                 }
 
+                return true;
+
             }
 
-            return outv;
+            return false;
         }
 
   
@@ -1606,7 +1620,7 @@ namespace z80assemble
                             int size = 0;
                             if (!int.TryParse(value, out size))
                             {
-                                size = domath(value);
+                                domath(value,out size);
                             }
 
                             bytes = size; //FIX ME DETECT HERE;
