@@ -364,6 +364,9 @@ namespace z80assemble
                     string[] xbits = xarg.Split(new char[] { '+' });
                     if (labels.ContainsKey(xbits[0]))
                     {
+                        xbits[0] = xbits[0].Trim();
+                        xbits[1] = xbits[1].Trim();
+
                         int num;
                         if (isnumber(xbits[1], out num))
                         {
@@ -382,6 +385,11 @@ namespace z80assemble
                     }
                     else
                     {
+                        if (externs.Contains((xbits[0])))
+                        {
+                            return argtype.LABEL;
+                        }
+
                         return argtype.INVALID;
                     }
                 }
@@ -541,8 +549,9 @@ namespace z80assemble
                 return argtype.IMMEDIATE;
             }
 
-            //if(setup==false)
-            // Debugger.Break();
+            if (setup == false)
+                Debugger.Break();
+
             return argtype.INVALID;
         }
 
@@ -639,10 +648,8 @@ namespace z80assemble
             bool arg1defer = false;
             bool arg2defer = false;
 
-            if (arg2 == "CHLEVS+1")
+            if (arg1 == "(SCLK1 + 1)")
                 Debugger.Break();
-
-
 
             argtype at1 = validatearg(arg1,out val1,out arg1,out arg1defer,false);
             argtype at2 = validatearg(arg2, out val2, out arg2,out arg2defer,false);
@@ -1561,7 +1568,10 @@ namespace z80assemble
                 }
             }
 
-            Match macromatch = Regex.Match(line, @"^([A-Za-z0-9_$-]+)[ \t]*MACRO[ \t]*(.*)[\r\n]+");
+            //if (lineno > 255)
+              //  Debugger.Break();
+
+            Match macromatch = Regex.Match(line, @"^([A-Za-z0-9_$-]+)[ \t]*\.?MACRO[ \t]*(.*)[\r\n]+");
             if (macromatch.Success)
             {
                 currentmacro = macromatch.Groups[1].Value;
@@ -1714,20 +1724,20 @@ namespace z80assemble
                 {
                     string p = match3.Groups[2].Value;
 
-                    Match match4a = Regex.Match(p, @"^[ \t]*([()a-zA-Z0-9+]+)[ \t\r]*$");
+                    Match match4a = Regex.Match(p, @"^[ \t]*([()a-zA-Z0-9+ ]+)[ \t\r]*$");
                     if (match4a.Success)
                     {
                         //textBox2.AppendText(" arguments \"" + match4a.Groups[1].Value + "\"");
-                        arg1 = match4a.Groups[1].Value;
+                        arg1 = match4a.Groups[1].Value.Trim();
                     }
                     else
                     {
-                        Match match4 = Regex.Match(p, @"[ \t]*([()a-zA-Z0-9+_]+)[ \t]*[, ]*[ \t]*([()a-zA-Z0-9+'_]+)[ \t\r]*");
+                        Match match4 = Regex.Match(p, @"[ \t]*([()a-zA-Z0-9+_ ]+)[ \t]*[, ]*[ \t]*([()a-zA-Z0-9+'_ ]+)[ \t\r]*");
                         if (match4.Success)
                         {
                             // textBox2.AppendText(" arguments \"" + match4.Groups[1].Value + "\" -- \"" + match4.Groups[2].Value + "\"");
-                            arg1 = match4.Groups[1].Value;
-                            arg2 = match4.Groups[2].Value;
+                            arg1 = match4.Groups[1].Value.Trim(); ;
+                            arg2 = match4.Groups[2].Value.Trim(); ;
                         }
                     }
                 }
