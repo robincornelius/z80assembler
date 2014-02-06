@@ -362,10 +362,13 @@ namespace z80assemble
                 if(!regok(bits[0]))
                 {
                     string[] xbits = xarg.Split(new char[] { '+' });
-                    if (labels.ContainsKey(xbits[0]))
+
+                    xbits[0] = xbits[0].Trim();
+                    xbits[1] = xbits[1].Trim();
+
+                    if (labels.ContainsKey(xbits[0]) || externs.Contains(xbits[0]))
                     {
-                        xbits[0] = xbits[0].Trim();
-                        xbits[1] = xbits[1].Trim();
+                       
 
                         int num;
                         if (isnumber(xbits[1], out num))
