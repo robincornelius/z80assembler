@@ -22,7 +22,8 @@ namespace z80assemble
             INDIRECTIMMEDIATE, //(5) 
             LABEL, // variable
             INDIRECTLABEL,
-            INDIRECTOFFSET, //(ix+5)
+            INDIRECTOFFSET, //
+            INDIRECTREGOFFSET, //(ix+5)
         }
 
     public class command
@@ -395,11 +396,14 @@ namespace z80assemble
 
                         return argtype.INVALID;
                     }
+
+                    return argtype.INDIRECTOFFSET;
                 }
 
                 if (setup && bits[1] == "O")
                 {
-                    return argtype.INDIRECTOFFSET;
+                    
+                    return argtype.INDIRECTREGOFFSET;
                 }
 
                 if (!isnumber(bits[1],out imvalue))
@@ -407,9 +411,9 @@ namespace z80assemble
                     return argtype.INVALID;
                 }
 
-                return argtype.INDIRECTOFFSET;
+                arg2 = bits[0];
 
-
+                return argtype.INDIRECTREGOFFSET;
 
             }
 
@@ -588,6 +592,9 @@ namespace z80assemble
                 return;
             }
 
+           if(command=="LD" && arg1.Trim()=="(IX+0)" && arg2.Trim()=="0")
+               Debugger.Break();
+
             string codes = getopcodes(command, arg1, arg2, line);
 
             if (codes == "")
@@ -651,13 +658,20 @@ namespace z80assemble
             bool arg1defer = false;
             bool arg2defer = false;
 
-            if (arg1 == "(SCLK1 + 1)")
-                Debugger.Break();
+            command = command.ToUpper();
+
+            //special cases where a is optional
+            if (command == "CP")
+            {
+                if (arg1.ToUpper() == "A")
+                {
+                    arg1 = arg2;
+                    arg2 = "";
+                }
+            }
 
             argtype at1 = validatearg(arg1,out val1,out arg1,out arg1defer,false);
             argtype at2 = validatearg(arg2, out val2, out arg2,out arg2defer,false);
-
-            command = command.ToUpper();
 
             if (command == "ORG")
             {
@@ -677,6 +691,8 @@ namespace z80assemble
                 //Do something
                 return ""; //NO opcodes
             }
+
+           
 
             //fudge testing fixme remove later
             //these are actually all undocumented commands so not currently supporting
@@ -757,10 +773,12 @@ namespace z80assemble
 
                     //if arg1 is a reg+offset ensure reg part patches
                     //NB there is no OFFSET type, this is always indirect
-                    if (at1 == argtype.INDIRECTOFFSET)
+                    if (at1 == argtype.INDIRECTREGOFFSET)
                     {
                         string[] bits1 = arg1.Split(new char[] { '+' });
                         string[] bits2 = c.arg1.Split(new char[] { '+' });
+
+                        bits2[0] = bits2[0].Trim(' ', '(', ')'); //FIX ME store this info in the command structure
 
                         if (bits1[0] != bits2[0])
                             continue;
@@ -768,10 +786,12 @@ namespace z80assemble
                     }
                   
                     //if arg2 is a reg+offset ensure reg part patches
-                    if (at2 == argtype.INDIRECTOFFSET)
+                    if (at2 == argtype.INDIRECTREGOFFSET)
                     {
                         string[] bits1 = arg2.Split(new char[]{'+'});
                         string[] bits2 = c.arg2.Split(new char[] { '+' });
+
+                        bits2[0] = bits2[0].Trim(' ', '(', ')'); //FIX ME store this info in the command structure
 
                         if (bits1[0] != bits2[0])
                             continue;
@@ -813,20 +833,25 @@ namespace z80assemble
                         return (c.opcode);
                     }
 
-                    if (at1 == argtype.INDIRECTOFFSET && at2 == argtype.IMMEDIATE)
+                    if (at1 == argtype.INDIRECTREGOFFSET && at2 == argtype.IMMEDIATE)
                     {
-                        string opcode = valueinsert(c.opcode, val1, 'o');
-                        opcode = valueinsert(opcode, val2, 'n');
+                        string opcode = valueinsert(c.opcode, val1, 'o',false);
+                        opcode = valueinsert(opcode, val2, 'n',false);
                         return opcode;
-                        //sub the nns for the real value;
-                        //return valueinsert(c.opcode, val1);
+                    }
+
+                    if (at2 == argtype.INDIRECTREGOFFSET && at1 == argtype.IMMEDIATE)
+                    {
+                        string opcode = valueinsert(c.opcode, val2, 'o', false);
+                        opcode = valueinsert(opcode, val1, 'n', false);
+                        return opcode;
                     }
                     
                     //if there is immediate data, insert this as 8 or 16 bits and return opcode
                     if (at2 == argtype.IMMEDIATE)
                     {
                         //sub the nns for the real value;
-                        return valueinsert(c.opcode, val2,c.arg2[0]);
+                        return valueinsert(c.opcode, val2,c.arg2[0],false);
                     }
 
                     if (at1 == argtype.IMMEDIATE)
@@ -855,7 +880,7 @@ namespace z80assemble
                         }
 
                         //sub the nns for the real value;
-                        return valueinsert(c.opcode, val1,c.arg1.ToLower()[0]);
+                        return valueinsert(c.opcode, val1,c.arg1.ToLower()[0],true);
                     }
 
                     if (at1 == argtype.LABEL)
@@ -905,7 +930,7 @@ namespace z80assemble
 
                     if(at1 == argtype.REG && at2==argtype.INDIRECTIMMEDIATE)
                     {
-                        return valueinsert(c.opcode, val2, 'n');
+                        return valueinsert(c.opcode, val2, 'n',false);
                     }
 
                     if ((at1 == argtype.INDIRECTREG || at1 == argtype.REG) && at2 == argtype.NOTPRESENT)
@@ -926,7 +951,7 @@ namespace z80assemble
 
                     if (at1 == argtype.INDIRECTIMMEDIATE && at2 == argtype.REG)
                     {
-                        return valueinsert(c.opcode, val1, 'n');
+                        return valueinsert(c.opcode, val1, 'n',false);
                     }
 
                     if (at2 == argtype.LABEL)
@@ -1163,12 +1188,12 @@ namespace z80assemble
    
         }
 
-        public string valueinsert(string opstring, int value,char target)
+        public string valueinsert(string opstring, int value,char target,bool rel)
         {
               byte hi = (byte)(value >> 8);
               byte lo = (byte)value;
 
-              if (target == 'o')
+              if (target == 'o' && rel==true)
               {
                   value=org-value;
               }
@@ -1592,6 +1617,9 @@ namespace z80assemble
                 return;
             }
 
+            //FIX ME AD2500 z80 does not require .DW .DS etc to be a preprocessor directive
+            //they can just be DW DS etc so we currently will not support that and it will fail to match an opcode
+            //we may like to add this in the future but really i can't see why we can't actually be strict about things
 
             //Directives again
             {
@@ -1620,7 +1648,7 @@ namespace z80assemble
                     {
                         codesegment = false;
                     }
-
+               
                     if (codesegment == false)
                     {
                         int bytes=0;
