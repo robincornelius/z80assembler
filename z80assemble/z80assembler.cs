@@ -154,6 +154,10 @@ namespace z80assemble
         string currentfile;
         public bool matchbreak = false;
 
+        public int inifblock = 0;
+        public bool skipping = false;
+
+
         public Dictionary<int, byte> bytes;
         Dictionary<string, int> labels = new Dictionary<string, int>();
         Dictionary<string, int> defines = new Dictionary<string, int>();
@@ -220,7 +224,7 @@ namespace z80assemble
                          invalidcount++;
                          //Exception e = new Exception("Failed to read command file");
 
-                         Console.WriteLine(String.Format("Failed to parse command {0} with args {1} {2}",command,arg1,arg2));
+                         //Console.WriteLine(String.Format("Failed to parse command {0} with args {1} {2}",command,arg1,arg2));
                          //throw (e);
                      }
 
@@ -318,6 +322,14 @@ namespace z80assemble
                     num = labels[data];
                     return true;
                 }
+            }
+
+            //is it a char constant?
+
+            if (data.Length == 3 && data[0] == '\'' && data[2] == '\'')
+            {
+                int val = (int)data[2];
+                return true;
             }
 
 
@@ -423,14 +435,22 @@ namespace z80assemble
                 {
                     if (setup)
                     {
-                        if(arg=="b")
+                        if (arg == "b")
                             return argtype.IMMEDIATE;
                     }
 
                     return argtype.REG;
                 }
                 else
+                {
+                    //if IX or IY are ever indirect they are really an INDIRECTREGOFFSET
+                    if (uarg == "IX" || uarg=="IY")
+                    {
+                        return argtype.INDIRECTREGOFFSET;
+                    }
+
                     return argtype.INDIRECTREG;
+                }
             }
              
             foreach (string r in validflags)
@@ -556,8 +576,8 @@ namespace z80assemble
                 return argtype.IMMEDIATE;
             }
 
-            if (setup == false)
-                Debugger.Break();
+            //if (setup == false)
+             //   Debugger.Break();
 
             return argtype.INVALID;
         }
@@ -592,9 +612,13 @@ namespace z80assemble
                 return;
             }
 
-           if(command=="LD" && arg1.Trim()=="(IX+0)" && arg2.Trim()=="0")
-               Debugger.Break();
+          // if(arg1!=null && arg1.Trim()=="(FIRST_LOOP)")
+           //    Debugger.Break();
+             
+           // if(command=="LD" && arg1=="A" && arg2=="(IY)")
+              //  Debugger.Break();
 
+            // JR      NC,NOADD
             string codes = getopcodes(command, arg1, arg2, line);
 
             if (codes == "")
@@ -612,7 +636,7 @@ namespace z80assemble
             else
             {
 
-                Console.WriteLine(String.Format("{0:X4} {1} \t\t {2}", org, line.Trim(), codes));
+                //Console.WriteLine(String.Format("{0:X4} {1} \t\t {2}", org, line.Trim(), codes));
 
                 string[] bits = codes.Split(new char[] { ' ' });
 
@@ -779,6 +803,7 @@ namespace z80assemble
                         string[] bits2 = c.arg1.Split(new char[] { '+' });
 
                         bits2[0] = bits2[0].Trim(' ', '(', ')'); //FIX ME store this info in the command structure
+                        bits1[0] = bits1[0].Trim(' ', '(', ')'); //FIX ME store this info in the command structure
 
                         if (bits1[0] != bits2[0])
                             continue;
@@ -792,6 +817,7 @@ namespace z80assemble
                         string[] bits2 = c.arg2.Split(new char[] { '+' });
 
                         bits2[0] = bits2[0].Trim(' ', '(', ')'); //FIX ME store this info in the command structure
+                        bits1[0] = bits1[0].Trim(' ', '(', ')'); //FIX ME store this info in the command structure
 
                         if (bits1[0] != bits2[0])
                             continue;
@@ -846,12 +872,12 @@ namespace z80assemble
                         opcode = valueinsert(opcode, val1, 'n', false);
                         return opcode;
                     }
-                    
+
                     //if there is immediate data, insert this as 8 or 16 bits and return opcode
                     if (at2 == argtype.IMMEDIATE)
                     {
                         //sub the nns for the real value;
-                        return valueinsert(c.opcode, val2,c.arg2[0],false);
+                        return valueinsert(c.opcode, val2,c.arg2[0],true);
                     }
 
                     if (at1 == argtype.IMMEDIATE)
@@ -904,7 +930,7 @@ namespace z80assemble
                         return opcode;
                     }
 
-                    if (at1 == argtype.INDIRECTOFFSET)
+                    if (at1 == argtype.INDIRECTOFFSET || at1==argtype.INDIRECTREGOFFSET)
                     {
                         string newstr = string.Format("{0:X2}", val1);
                         string opcode = c.opcode;
@@ -916,6 +942,16 @@ namespace z80assemble
                         }
 
                         return opcode;
+                    }
+
+                    if (at1 == argtype.REG && at2 == argtype.INDIRECTREGOFFSET)
+                    {
+                        string newstr = string.Format("{0:X2}", val2);
+                        string opcode = c.opcode;
+                        opcode = opcode.Replace("oo", newstr);
+                        return opcode;
+
+                        //opcode = offsetreg(opcode, arg1);
                     }
 
                     if ((at1 == argtype.REG || at1 == argtype.INDIRECTREG) && c.arg2 == "r")
@@ -1157,7 +1193,7 @@ namespace z80assemble
                 //fix me wrong length?
                 int length = match.Groups[1].Value.Length/2;
                 linkrequiredat.Add(org + length, new linkrequiredatdata(16,label.Trim(new char[] { '(', ')' }),0));
-                Console.WriteLine(String.Format("Link required at address {0:x} for label {1}",org+length,label));
+                //Console.WriteLine(String.Format("Link required at address {0:x} for label {1}",org+length,label));
                 return(string.Format("{0} 00 00",match.Groups[1].Value));
             }
             
@@ -1170,7 +1206,7 @@ namespace z80assemble
 
                 linkrequiredatdata lrd = new linkrequiredatdata(8, label.Trim(new char[] { '(', ')' }), 0,true, org + length+1); //FIX ME +1??
                 linkrequiredat.Add(org + length, lrd);
-                Console.WriteLine(String.Format("Link required at address {0:x} for label {1}", org + length, label));
+                //Console.WriteLine(String.Format("Link required at address {0:x} for label {1}", org + length, label));
                 return (string.Format("{0} 00", match2.Groups[1].Value));
             }
 
@@ -1179,7 +1215,7 @@ namespace z80assemble
             {
                 int length = match3.Groups[1].Value.Length / 2;
                 linkrequiredat.Add(org + length, new linkrequiredatdata(8,label.Trim(new char[] { '(', ')' }),0));
-                Console.WriteLine(String.Format("Link required at address {0:x} for label {1}", org + length, label));
+                //Console.WriteLine(String.Format("Link required at address {0:x} for label {1}", org + length, label));
                 return (string.Format("{0} 00", match3.Groups[1].Value));
             }
 
@@ -1255,20 +1291,20 @@ namespace z80assemble
     
         public void fixlabel(string label)
         {
-            Console.WriteLine(String.Format("Fixed Label {0} at address {1:X4}", label, org));
+            //Console.WriteLine(String.Format("Fixed Label {0} at address {1:X4}", label, org));
             labels[label]=org;
         }
 
         public void fixdatalabel(string label,int size)
         {
-            Console.WriteLine(String.Format("Fixed Label {0} at address {1:X4}", label, org));
+            //Console.WriteLine(String.Format("Fixed Label {0} at address {1:X4}", label, org));
             labels[label] = ramptr;
             ramptr += size;
         }
 
         public void pushlabel(string label)
         {
-            Console.WriteLine(String.Format("Found Label {0}",label));
+            //Console.WriteLine(String.Format("Found Label {0}",label));
             labels.Add(label, 0);
         }
 
@@ -1461,7 +1497,7 @@ namespace z80assemble
 
                 }
 
-                Match match2 = Regex.Match(line, @"^([A-Za-z0-9_]*)[ \t]+\.([A-Za-z0-9]+)[ \t]+([A-Za-z0-9.]*)[ \t\r]*");
+                Match match2 = Regex.Match(line, @"^([A-Za-z0-9_]*)[ \t]+\.([A-Za-z0-9]+)[ \t]+([A-Za-z0-9.$_]*)[ \t\r]*");
                 if (match2.Success)
                 {
                     //textBox2.AppendText("Found Preprocessor " + match2.Groups[1].Value + " => " + match2.Groups[2].Value + "\r\n");
@@ -1559,7 +1595,7 @@ namespace z80assemble
             }
          
             // Labels
-            Match match = Regex.Match(line, @"^([A-Za-z0-9_]+):(.*)");
+            Match match = Regex.Match(line, @"^([A-Za-z0-9_$]+):(.*)");
             if (match.Success)
             {
                 string key = match.Groups[1].Value;
@@ -1617,13 +1653,42 @@ namespace z80assemble
                 return;
             }
 
+
+            if (inifblock > 0)
+            {
+                Match matcha = Regex.Match(line, @"^[ \t]+.?ENDIF[ \n\r\t]*");
+                if (matcha.Success)
+                {
+                    inifblock--;
+                    return;
+                }
+
+            }
+
+            Match ifmatch = Regex.Match(line, @"^[ \t]+\.?IF[ \t]*(.*)[\r\n]+");
+            if (ifmatch.Success)
+            {
+                string criteria = ifmatch.Groups[1].Value;
+                inifblock++;
+                skipping = true;
+                if(equs.ContainsKey(criteria))
+                {
+                    skipping = false;
+                }
+                return;
+            }
+
+            if (inifblock>0 && skipping == true)
+                return;
+
+
             //FIX ME AD2500 z80 does not require .DW .DS etc to be a preprocessor directive
             //they can just be DW DS etc so we currently will not support that and it will fail to match an opcode
             //we may like to add this in the future but really i can't see why we can't actually be strict about things
 
             //Directives again
             {
-                Match match2 = Regex.Match(line, @"^([A-Za-z0-9_]*)[ \t]+\.([A-Za-z0-9]+)[ \t]*([A-Za-z0-9]*)[ \t\r]*");
+                Match match2 = Regex.Match(line, @"^([A-Za-z0-9_]*)[ \t]+\.([A-Za-z0-9]+)[ \t]*([A-Za-z0-9_$]*)[ \t\r]*");
                 if (match2.Success)
                 {
                     //textBox2.AppendText("Found Preprocessor " + match2.Groups[1].Value + " => " + match2.Groups[2].Value + "\r\n");
@@ -1682,7 +1747,7 @@ namespace z80assemble
                         byte[] data;
                         switch (directive.ToUpper())
                         {
-                            case "DB":
+                            case "DB": //FIXME this can be a comma seperated list
                                 data = new byte[1];
                                 int idata;
                                 if (isnumber(value, out idata))
@@ -1722,7 +1787,7 @@ namespace z80assemble
                                 }
                                 break;
                             case "DS":
-                                //FIXME!!!
+                                //FIXME implement me
                                 break;
 
                         }
@@ -1742,7 +1807,7 @@ namespace z80assemble
 
 
           
-            Match match3 = Regex.Match(line, @"^\s+([A-Za-z0-9]+)\s*(.*)\s*(;*.*)");
+            Match match3 = Regex.Match(line, @"^\s+([A-Za-z0-9_$]+)\s*(.*)\s*(;*.*)");
             if (match3.Success)
             {
                 string arg1 = null;
@@ -1755,7 +1820,7 @@ namespace z80assemble
                 {
                     string p = match3.Groups[2].Value;
 
-                    Match match4a = Regex.Match(p, @"^[ \t]*([()a-zA-Z0-9+ ]+)[ \t\r]*$");
+                    Match match4a = Regex.Match(p, @"^[ \t]*([()a-zA-Z0-9$'+_ ]+)[ \t\r]*$");
                     if (match4a.Success)
                     {
                         //textBox2.AppendText(" arguments \"" + match4a.Groups[1].Value + "\"");
@@ -1763,7 +1828,7 @@ namespace z80assemble
                     }
                     else
                     {
-                        Match match4 = Regex.Match(p, @"[ \t]*([()a-zA-Z0-9+_ ]+)[ \t]*[, ]*[ \t]*([()a-zA-Z0-9+'_ ]+)[ \t\r]*");
+                        Match match4 = Regex.Match(p, @"[ \t]*([()a-zA-Z0-9$'+_ ]+)[ \t]*[, ]*[ \t]*([()a-zA-Z0-9+$'_ ]+)[ \t\r]*");
                         if (match4.Success)
                         {
                             // textBox2.AppendText(" arguments \"" + match4.Groups[1].Value + "\" -- \"" + match4.Groups[2].Value + "\"");
