@@ -612,29 +612,6 @@ namespace z80assemble
                 return;
             }
 
-          //  if (arg1 == "(SCLK1 + 1)")
-             //   Debugger.Break();
-
-            //if (arg1 != null)
-           // {
-             //   int val;
-                //if (domath(arg1, out val))
-                //{
-                //    arg1 = val.ToString();
-                //}
-           // }
-
-
-           
-          //  if (arg2 != null)
-           // {
-           //     int val;
-           //     if (domath(arg2, out val))
-            //    {
-            //        arg2 = val.ToString();
-            //    }
-           // }
-         
             string codes = getopcodes(command, arg1, arg2, line);
 
             if (codes == "")
@@ -645,15 +622,12 @@ namespace z80assemble
                 List<string> macrolines=processmacro(line);
                 foreach (string s in macrolines)
                 {
-                    parseline(s);
+                    newparser(s, 1);
                 }
 
             }
             else
             {
-
-                //Console.WriteLine(String.Format("{0:X4} {1} \t\t {2}", org, line.Trim(), codes));
-
                 string[] bits = codes.Split(new char[] { ' ' });
 
                 foreach (string bit in bits)
@@ -663,8 +637,6 @@ namespace z80assemble
                     org++;
                 }
             }
-
- 
         }
 
         int endiantwiddle(int val)
@@ -1736,8 +1708,6 @@ namespace z80assemble
             string command = line[1].ToUpper();
             command = command.TrimStart('.');
 
-            //FIX ME are we actually incrementing the data pointer anywhere before allocatiing data?
-
             if (codesegment == false && pass==0)
             {
                 int bytes = 0;
@@ -1771,29 +1741,49 @@ namespace z80assemble
                 byte[] data;
                 switch (command)
                 {
-                    case "DB": //FIXME this can be a comma seperated list or a string etc
-                    case "DEFB": //FIXME this can be a comma seperated list or a string etc
-                        data = new byte[1];
-                        int idata;
-                        if (isnumber(line[2], out idata))
+                    case "DB": 
+                    case "DEFB": 
+
+                        //cope with delimited entry
+                        for (int pos = 2; pos < line.Count; pos++)
                         {
-                            if (idata > 255)
+                            //Cope with string literals as byte arrays
+                            if (line[pos][0] == '\'')
                             {
-                                Exception e = new Exception("Number too big for .db");
-                                throw e;
+                                string sdata = line[pos];
+                                sdata = sdata.Substring(1, line[pos].Length - 2);
+                     
+                                //messy conversion, must be a cleaner way
+                                byte[] b = new byte[sdata.Length];
+                                int i = 0;
+                                foreach (char c in sdata)
+                                {
+                                    b[i] = (byte)c;
+                                    i++;
+                                }
+                                pushbytes(b);
+                                
+                               
                             }
+                            else
+                            {
+                                //cope with regular numbers
+                                data = new byte[1];
+                                int idata;
+                                if (isnumber(line[pos], out idata))
+                                {
+                                    if (idata > 255)
+                                    {
+                                        Exception e = new Exception("Number too big for .db");
+                                        throw e;
+                                    }
 
-                            data[0] = (byte)idata;
-                            pushbytes(data);
+                                    data[0] = (byte)idata;
+                                    pushbytes(data);
+                                }
+                            }
                         }
-                        else
-                        {
-
-                            //Exception e = new Exception("Unable to parse " + value);
-                            //throw e;
-
-                        }
-
+                        
                         break;
                     case "DW":
                         data = new byte[2];
@@ -1852,444 +1842,10 @@ namespace z80assemble
             //pushextern(value);
         }
 
-        public void pass1(string[] lines)
-        {
-
-            int pos = -1;
-            foreach (string linex in lines)
-            {
-                pos++;
-                string line = linex;
-
-                //comment line or null line
-                if (line.Length == 0)
-                {
-                    continue ;
-                }
-
-                if (line[0] == ';')
-                {
-                    continue;
-                }
-
-                if (line[0] == '\r' || line[0] == '\n')
-                {
-                    continue;
-                }
-
-                Match match5 = Regex.Match(line, @"^[ \t]+;.*");
-                if (match5.Success)
-                {
-                    continue;
-                }
-
-                Match commentmatch = Regex.Match(line, @"^(.*);(.*)");
-                if (commentmatch.Success)
-                {
-                    line = commentmatch.Groups[1].Value;
-                }
-
-                // Do any maths that we find
-
-                Match matchmath = Regex.Match(line, @"([0-9a-zA-Z_]+)[ \t]*([+\-*/])[ \t]*([0-9a-zA-Z_]+)");
-                if (matchmath.Success)
-                {
-                    int val1, val2;
-                    if (isnumber(matchmath.Groups[1].Value, out val1) && isnumber(matchmath.Groups[3].Value,out val2))
-                    {
-                        string op = matchmath.Groups[2].Value;
-                        int outv = 0;
-
-                        switch (op)
-                        {
-                            case "+":
-                                outv = val1 + val2;
-                                break;
-                            case "-":
-                                outv = val1 - val2;
-                                break;
-                            case "*":
-                                outv = val1 * val2;
-                                break;
-                            case "/":
-                                outv = val1 / val2;
-                                break;
-
-                        }
-
-                        line = Regex.Replace(line, @"([0-9a-zA-Z_]+[ \t]*[+\-*/][ \t]*[0-9a-zA-Z_]+)", outv.ToString());
-                        lines[pos] = line;
-                    }
-
-                }
-
-                Match match2 = Regex.Match(line, @"^([A-Za-z0-9_]*)[ \t]+\.([A-Za-z0-9]+)[ \t]+([A-Za-z0-9.$_]*)[ \t\r]*");
-                if (match2.Success)
-                {
-                    //textBox2.AppendText("Found Preprocessor " + match2.Groups[1].Value + " => " + match2.Groups[2].Value + "\r\n");
-                    string label = match2.Groups[1].Value;
-                    string directive = match2.Groups[2].Value;
-                    string value = match2.Groups[3].Value;
-
-                    if (directive.ToUpper() == "EXTERN")
-                    {
-                        pushextern(value);
-                    }
-
-                    if (directive.ToUpper() == "INCLUDE")
-                    {                
-                        //load file in value and recurse,
-                        StreamReader sr;
-                        try
-                        {
-                            sr = new StreamReader(basepath+Path.DirectorySeparatorChar+"files" + Path.DirectorySeparatorChar + value);
-                        }
-                        catch (Exception e)
-                        {
-                            senderror(currentfile,lineno,"Failed to open include file " + value);
-                            return;
-                        }
-
-                        string data = sr.ReadToEnd();
-                        string oldfilename = currentfile;
-                        int oldlineno = lineno;
-                        lineno = 0;
-                        parse(data, value);
-                        currentfile = oldfilename;
-                        lineno = oldlineno;
-                        //pushextern(value);
-                    }
-
-                    if (directive.ToUpper() == "EQU")
-                    {
-                        equs.Add(label, value);
-
-                    }
-
-                }
-
-                //Non directive equ *sigh*
-                Match matchequ = Regex.Match(line, @"^([A-Za-z0-9_]*)[ \t]+EQU[ \t]+([A-Za-z0-9.]*)[ \t\r]*");
-                if (matchequ.Success)
-                {
-                    string label = matchequ.Groups[1].Value;
-                  
-                    string value = matchequ.Groups[2].Value;
-
-                    equs.Add(label, value);
-                }
-
-                // Labels
-                Match match = Regex.Match(line, @"^([A-Za-z0-9_]+):(.*)");
-                if (match.Success)
-                {
-                    string key = match.Groups[1].Value;
-                    string rest = match.Groups[2].Value;
-                    //textBox2.AppendText("Found lable " + key + "\r\n");
-                    pushlabel(key);
-                    line = rest;
-                }
-
-              
-
-            }
-        }
 
         string currentdatalabel = "";
        
-        public void parseline(string line)
-        {
-
-            //comment line or null line
-            if (line.Length == 0)
-            {
-                //textBox2.AppendText("\r\n");
-               return;
-            }
-
-            Match commentmatch = Regex.Match(line, @"^(.*);(.*)");
-            if (commentmatch.Success)
-            {
-                parseline(commentmatch.Groups[1].Value);
-                return;
-            }
-
-            Match whitematch = Regex.Match(line, @"^[ \t\r\n\v]*$");
-            if (whitematch.Success)
-            {
-                return;
-            }
-         
-            // Labels
-            Match match = Regex.Match(line, @"^([A-Za-z0-9_$]+):(.*)");
-            if (match.Success)
-            {
-                string key = match.Groups[1].Value;
-                string rest = match.Groups[2].Value;
-                // textBox2.AppendText("Found lable " + key + "\r\n");
-                if (codesegment == true)
-                {
-                    fixlabel(key);
-                }
-                else
-                {
-                    currentdatalabel = key;
-                }
-
-                parseline(rest);
-                return;
-            }
-
-
-            if (macro == true)
-            {
-                Match matcha = Regex.Match(line, @"^[ \t]+ENDM[ \n\r\t]*");
-                if (matcha.Success)
-                {
-                    //sendmsg("END macro ");
-                    macro = false;
-                    return;
-                }
-                else
-                {
-                    //save this line in the current macro
-                    macros[currentmacro].addline(line);
-                    return;
-                }
-            }
-
-            //if (lineno > 255)
-              //  Debugger.Break();
-
-            Match macromatch = Regex.Match(line, @"^([A-Za-z0-9_$-]+)[ \t]*\.?MACRO[ \t]*(.*)[\r\n]+");
-            if (macromatch.Success)
-            {
-                currentmacro = macromatch.Groups[1].Value;
-                string args = macromatch.Groups[2].Value;
-                args=args.Trim();
-                //sendmsg("Found macro " + currentmacro);
-                macro = true;
-
-                string[] arargs = args.Split(new char[] { ',' });
-
-                macros[currentmacro] = new macro();
-                macros[currentmacro].command = currentmacro;
-                macros[currentmacro].setargs(arargs.ToList());
-
-                return;
-            }
-
-
-            if (inifblock > 0)
-            {
-                Match matcha = Regex.Match(line, @"^[ \t]+.?ENDIF[ \n\r\t]*");
-                if (matcha.Success)
-                {
-                    inifblock--;
-                    return;
-                }
-
-            }
-
-            Match ifmatch = Regex.Match(line, @"^[ \t]+\.?IF[ \t]*(.*)[\r\n]+");
-            if (ifmatch.Success)
-            {
-                string criteria = ifmatch.Groups[1].Value;
-                inifblock++;
-                skipping = true;
-                if(equs.ContainsKey(criteria))
-                {
-                    skipping = false;
-                }
-                return;
-            }
-
-            if (inifblock>0 && skipping == true)
-                return;
-
-
-            //FIX ME AD2500 z80 does not require .DW .DS etc to be a preprocessor directive
-            //they can just be DW DS etc so we currently will not support that and it will fail to match an opcode
-            //we may like to add this in the future but really i can't see why we can't actually be strict about things
-
-            //Directives again
-            {
-                Match match2 = Regex.Match(line, @"^([A-Za-z0-9_]*)[ \t]+\.([A-Za-z0-9]+)[ \t]*([A-Za-z0-9_$]*)[ \t\r]*");
-                if (match2.Success)
-                {
-                    //textBox2.AppendText("Found Preprocessor " + match2.Groups[1].Value + " => " + match2.Groups[2].Value + "\r\n");
-                    string directive = match2.Groups[2].Value;
-                    string value = match2.Groups[3].Value;
-
-                    if (directive.ToUpper() == "INCLUDE")
-                        return; //Already done
-
-                    if (directive.ToUpper() == "EXTERN")
-                        return; //Already done
-
-                    if (directive.ToUpper() == "EQU")
-                        return;
-
-                    if (directive.ToUpper() == "CODE")
-                    {
-                        codesegment = true;
-                    }
-
-                    if (directive.ToUpper() == "DATA")
-                    {
-                        codesegment = false;
-                    }
-               
-                    if (codesegment == false)
-                    {
-                        int bytes=0;
-                        if (directive.ToUpper() == "DW")
-                            bytes=2;
-                        if(directive.ToUpper() == "DB")
-                             bytes=1;
-                        if (directive.ToUpper() == "DS")
-                        {
-                            int size = 0;
-                            if (!int.TryParse(value, out size))
-                            {
-                                domath(value,out size);
-                            }
-
-                            bytes = size; //FIX ME DETECT HERE;
-                        }
-
-                        if (bytes > 0)
-                        {
-                            if (currentdatalabel != "")
-                            {
-                                fixdatalabel(currentdatalabel, bytes);
-                            }
-                            return;
-                        }
-
-                    }
-                    if (codesegment == true)
-                    {
-                        byte[] data;
-                        switch (directive.ToUpper())
-                        {
-                            case "DB": //FIXME this can be a comma seperated list or a string etc
-                                data = new byte[1];
-                                int idata;
-                                if (isnumber(value, out idata))
-                                {
-                                    if (idata > 255)
-                                    {
-                                        Exception e = new Exception("Number too big for .db");
-                                        throw e;
-                                    }
-
-                                    data[0] = (byte)idata;
-                                    pushbytes(data);
-                                }
-                                else
-                                {
-                                   
-                                    //Exception e = new Exception("Unable to parse " + value);
-                                    //throw e;
-                                    
-                                }
-                              
-                                break;
-                            case "DW":
-                                data = new byte[2];
-                                int val;
-                                if(isnumber(value,out val))
-                                {
-                                    data[0] = (byte)(val & 0xFF);
-                                    data[1] = (byte)(val >> 8 & 0xff);
-                                    pushbytes(data);
-                                }
-                                else
-                                {
-                                    linkrequiredatdata d = new linkrequiredatdata(2,value,0);
-                                    linkrequiredat.Add(org, d);
-                                    org += 2;
-                                }
-                                break;
-                            case "DS":
-                                int size = 0;
-                                if (!int.TryParse(value, out size))
-                                {
-                                    domath(value,out size);
-                                }
-
-                                org += size; //Not sure how useful this really is?
-                                break;
-
-                        }
-
-                    }
-                    return;
-                }
-
-               
-            }
-
-             Match matchequ = Regex.Match(line, @"^([A-Za-z0-9_]*)[ \t]+EQU[ \t]+([A-Za-z0-9.]*)[ \t\r]*");
-             if (matchequ.Success)
-             {
-                 return;
-             }
-
-
-          
-            Match match3 = Regex.Match(line, @"^\s+([A-Za-z0-9_$]+)\s*(.*)\s*(;*.*)");
-            if (match3.Success)
-            {
-                string arg1 = null;
-                string arg2 = null;
-                string command = match3.Groups[1].Value;
-                // textBox2.AppendText("Found command " + command + " -- > ");
-                // Now break down that command into 0,1 or 2 paramater
-
-                if (match3.Groups[2].Value != "")
-                {
-                    string p = match3.Groups[2].Value;
-
-                    Match match4a = Regex.Match(p, @"^[ \t]*([()a-zA-Z0-9$'+_ ]+)[ \t\r]*$");
-                    if (match4a.Success)
-                    {
-                        //textBox2.AppendText(" arguments \"" + match4a.Groups[1].Value + "\"");
-                        arg1 = match4a.Groups[1].Value.Trim();
-                    }
-                    else
-                    {
-                        Match match4 = Regex.Match(p, @"[ \t]*([()a-zA-Z0-9$'+_ ]+)[ \t]*[, ]*[ \t]*([()a-zA-Z0-9+$'_ ]+)[ \t\r]*");
-                        if (match4.Success)
-                        {
-                            // textBox2.AppendText(" arguments \"" + match4.Groups[1].Value + "\" -- \"" + match4.Groups[2].Value + "\"");
-                            arg1 = match4.Groups[1].Value.Trim(); ;
-                            arg2 = match4.Groups[2].Value.Trim(); ;
-                        }
-                    }
-                }
-
-                try
-                {
-                    pushcommand(command, arg1, arg2, line);
-                    return;
-                }
-                catch (Exception ex)
-                {
-
-                    senderror(currentfile, lineno, ex.Message);
-                    sendmsg(ex.Message + " On line " + lineno.ToString() + "\n" + line);
-                    return;
-                }
-                //textBox2.AppendText("\r\n");
-
-            }
-
-            senderror(currentfile, lineno, "Unknown token ");
-        }
-
-
+ 
         // Do stuff
         bool codesegment;
         bool macro;
@@ -2348,29 +1904,7 @@ namespace z80assemble
                }
            }
 
-         
-           //pass 1 just gets any equs/labels etc in current file so they are defined if used before they 
-           //are defined.
-           //pass1(lines);
-
            lineno = 0;
-/*
-           foreach (string linex in lines)
-           {
-               try
-               {
-                   parseline(linex);
-               }
-               catch (Exception e)
-               {
-                   senderror(filename,lineno,e.Message); 
-
-               }
-               lineno++;
-               //Look at character at start of line and decide action
-           }
- */
-
         }
 
         void sendmsg(string msg)
