@@ -612,13 +612,29 @@ namespace z80assemble
                 return;
             }
 
-          // if(arg1!=null && arg1.Trim()=="(FIRST_LOOP)")
-           //    Debugger.Break();
-             
-           // if(command=="LD" && arg1=="A" && arg2=="(IY)")
-              //  Debugger.Break();
+          //  if (arg1 == "(SCLK1 + 1)")
+             //   Debugger.Break();
 
-            // JR      NC,NOADD
+            //if (arg1 != null)
+           // {
+             //   int val;
+                //if (domath(arg1, out val))
+                //{
+                //    arg1 = val.ToString();
+                //}
+           // }
+
+
+           
+          //  if (arg2 != null)
+           // {
+           //     int val;
+           //     if (domath(arg2, out val))
+            //    {
+            //        arg2 = val.ToString();
+            //    }
+           // }
+         
             string codes = getopcodes(command, arg1, arg2, line);
 
             if (codes == "")
@@ -1039,14 +1055,33 @@ namespace z80assemble
 
         public  List<string> processmacro(string line)
         {
-            line = line.Trim();
-            Match match = Regex.Match(line, @"^([A-Za-z0-9_$-]*)[ \t]*([A-Za-z0-9(),$_-]*)?");
-            if (match.Success)
-            {
-                string command = match.Groups[1].Value;
-                string allargs = match.Groups[2].Value;
 
-                string[] args = allargs.Split(new char[] { ',' });
+            Regex regex = new Regex(@"(?<token>^[\w$_:]*)|((?<token>[""'](.*?)(?<!\\)[""']|(?<token>[\w$_+*/.()-]+))(\s)*)|(?<comment>;.*)", RegexOptions.None);
+
+            var result = (from Match m in regex.Matches(line)
+                          where m.Groups["token"].Success
+                          select m.Groups["token"].Value).ToList();
+
+
+            //line = line.Trim();
+            //Match match = Regex.Match(line, @"^([A-Za-z0-9_$-]+[:\s]*)([A-Za-z0-9_$-]*)[ \t]*([A-Za-z0-9(),$_-]*)?");
+            //if (match.Success)
+            {
+                string command = result[1];
+
+                List<string> allargs2 = new List<string>();
+
+                int x = 2;
+                while (x < result.Count)
+                {
+                    allargs2.Add(result[x]);
+                    x++;
+                }
+
+
+                //string allargs = match.Groups[3].Value;
+
+               // string[] args = allargs.Split(new char[] { ',' });
 
                 foreach (KeyValuePair<string, macro> kvp in macros)
                 {
@@ -1054,7 +1089,7 @@ namespace z80assemble
                     {
                         //Build the macro inserting the args as defined
                         macro m = kvp.Value;
-                        List<string> allargs2 = args.ToList();
+                        //List<string> allargs2 = args.ToList();
 
                         List<string> output = new List<string>();
 
@@ -1396,8 +1431,12 @@ namespace z80assemble
             if (matchmath.Success)
             {
                 int val1,val2;
-                isnumber(matchmath.Groups[1].Value, out val1);
-                isnumber(matchmath.Groups[3].Value, out val2);
+
+                if (!isnumber(matchmath.Groups[1].Value, out val1))
+                    return false;
+
+                if (!isnumber(matchmath.Groups[3].Value, out val2))
+                    return false;
 
                 string op = matchmath.Groups[2].Value;
                
@@ -1444,7 +1483,7 @@ namespace z80assemble
 
                  //if we are defining a macro just store this line and continue
                  //we will pass it when it is invoked
-                 if (macro == true)
+                 if (macro == true && !linex.Contains("ENDM"))
                  {
                      macros[currentmacro].addline(line);
                      return;
@@ -1453,7 +1492,7 @@ namespace z80assemble
                  //New parser code her
                  RegexOptions options = RegexOptions.None;
 
-                 Regex regex = new Regex(@"(?<token>^[\w$_:]*)|((?<token>[""'](.*?)(?<!\\)[""']|(?<token>[\w$_+*/.-]+))(\s)*)|(?<comment>;.*)", options);
+                 Regex regex = new Regex(@"(?<token>^[\w$_:]*)|((?<token>[\w$_.()-]+\s[+/*-]\s[\w$_.()-]+)|(?<token>[""'(](.*?)(?<!\\)[""')]|(?<token>[\w$_+*/.()-]+))(\s)*)|(?<comment>;.*)", options);
 
                  var result = (from Match m in regex.Matches(line)
                                where m.Groups["token"].Success
@@ -1510,7 +1549,7 @@ namespace z80assemble
                      }
                  }
 
-                 if (result.Count >= 2)
+                 //if (result.Count >= 2)
                  {
                     // if (result[1][0] == '.')
                     // {
@@ -1519,6 +1558,9 @@ namespace z80assemble
                      //}
                      //else
                      {
+                         if (result.Count < 2)
+                             return;
+
                          string command = result[1].ToUpper();
 
                          //if (validcomamnds.Contains(command))
@@ -1530,10 +1572,13 @@ namespace z80assemble
                             switch(command)
                             {
                                 case  "ORG":
+                                case ".ORG":
                                     if (pass == 0)
                                         break;
                                     {
                                         int num;
+                                        if (result.Count < 3)
+                                            return;
                                         if(isnumber(result[2],out num))
                                         {
                                             org=num;
@@ -1546,20 +1591,23 @@ namespace z80assemble
                                     break;
 
                                 case    "PAGE":
+                                case ".PAGE":
                                     if (pass == 0)
                                         break;
                                     break;
 
-                                case    "DATA":
+                                case    ".DATA":
                                     codesegment = false;
                                      break;
 
-                                case    "CODE":
+                                case    ".CODE":
                                      codesegment = true;
                                      break;
 
                                 case    "EQU":
                                 case    ".EQU":
+                                     if (result.Count < 3)
+                                         return;
                                      if (pass == 0)
                                      {
                                          equs.Add(result[0], result[2]);
@@ -1574,6 +1622,8 @@ namespace z80assemble
                                      break;
 
                                 case    "IF":
+                                     if (result.Count < 2)
+                                         return;
                                      string criteria = result[1]; 
                                       inifblock++;
                                       skipping = true;
@@ -1588,6 +1638,7 @@ namespace z80assemble
                                      break;
 
                                 case    "MACRO":
+                                case    ".MACRO":
 
                                      macro = true;
                                      List<string> mbits = result;
@@ -1601,24 +1652,35 @@ namespace z80assemble
                                      break;
 
                                 case    "ENDM":
+                                case ".ENDM":
                                      macro = false;
                                      break;
 
                                 case    "DB":
                                 case    "DW":
                                 case    "DS":
-                                     handledata(result); //code or data handled here
+                                case    ".DB":
+                                case    ".DW":
+                                case    ".DS":
+                                case    "DEFB":
+   
+                                     handledata(result,pass); //code or data handled here
+                                     
                                      break;
 
-                                case "GLOBAL":
+                                case ".GLOBAL":
                                      //pushglobal(result[2]);
                                      break;
 
-                                case "EXTERN":
+                                case ".EXTERN":
+                                     if (result.Count < 3)
+                                         return;
                                      pushextern(result[2]);
                                      break;
 
                                 case ".INCLUDE":
+                                     if (result.Count < 3)
+                                         return;
                                      if (pass == 1)
                                          break;
                                      includefile(result[2]);
@@ -1628,7 +1690,28 @@ namespace z80assemble
                                      if (pass == 0)
                                         return;
                                      //Do command here
-                                     pushcommand(result[1], result[2], result[3], line);
+
+                                     // this is a fugly mess
+                                     if (result.Count < 3)
+                                         return;
+
+                                     if (result.Count > 3)
+                                     {
+                                         pushcommand(result[1], result[2], result[3], line);
+                                     }
+                                     else if (result.Count > 2)
+                                     {
+                                         pushcommand(result[1], result[2], null, line);
+                                     }
+                                     else if (result.Count > 1)
+                                     {
+                                         pushcommand(result[1], null, null, line);
+                                     }
+                                    
+                                    
+
+                                     
+
                                     break;
 
                             }
@@ -1643,21 +1726,26 @@ namespace z80assemble
              }
         }
 
-        public void handledata(List<string> line)
+        public void handledata(List<string> line,int pass)
         {
             //FIX ME not finished
             //This is the old code copied across it does not handle the 'dfdsfdsfds' or 1,2,3,4,5 cases
             //This data is now correctly sent in the lines[] data " or ' are left intact to identify with
             //comma seperated data will be split
 
-            if (codesegment == false)
+            string command = line[1].ToUpper();
+            command = command.TrimStart('.');
+
+            //FIX ME are we actually incrementing the data pointer anywhere before allocatiing data?
+
+            if (codesegment == false && pass==0)
             {
                 int bytes = 0;
-                if (line[1].ToUpper() == "DW")
+                if (command == "DW")
                     bytes = 2;
-                if (line[1].ToUpper() == "DB")
+                if (command == "DB" || line[1].ToUpper() == "DEFB")
                     bytes = 1;
-                if (line[1].ToUpper() == "DS")
+                if (command == "DS")
                 {
                     int size = 0;
                     if (!int.TryParse(line[2], out size))
@@ -1678,12 +1766,13 @@ namespace z80assemble
                 }
 
             }
-            if (codesegment == true)
+            if (codesegment == true && pass==1)
             {
                 byte[] data;
-                switch (line[1].ToUpper())
+                switch (command)
                 {
                     case "DB": //FIXME this can be a comma seperated list or a string etc
+                    case "DEFB": //FIXME this can be a comma seperated list or a string etc
                         data = new byte[1];
                         int idata;
                         if (isnumber(line[2], out idata))
@@ -1757,7 +1846,7 @@ namespace z80assemble
             string oldfilename = currentfile;
             int oldlineno = lineno;
             lineno = 0;
-            parse(data, filename);
+            parse(data, filename,true);
             currentfile = oldfilename;
             lineno = oldlineno;
             //pushextern(value);
@@ -2207,7 +2296,7 @@ namespace z80assemble
         string currentmacro;
         int lineno;
 
-        public void parse(string code,string filename)
+        public void parse(string code,string filename,bool iamrecured=false)
         {
 
             currentfile = filename;
@@ -2241,18 +2330,22 @@ namespace z80assemble
 
            lineno = 0;
 
-           foreach (string linex in lines)
+           if (iamrecured == false)
            {
-               try
-               {
-                   newparser(linex, 1);
-               }
-               catch (Exception e)
-               {
-                   senderror(filename, lineno, e.Message);
 
+               foreach (string linex in lines)
+               {
+                   try
+                   {
+                       newparser(linex, 1);
+                   }
+                   catch (Exception e)
+                   {
+                       senderror(filename, lineno, e.Message);
+
+                   }
+                   lineno++;
                }
-               lineno++;
            }
 
          
