@@ -444,6 +444,28 @@ namespace Z80IDE
 
         }
 
+        private void importHEXToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+            OpenFileDialog dialog = new OpenFileDialog();
+
+            dialog.Filter = "Hex files (*.hex)|*.hex";
+            dialog.Title = "Load HEX file";
+
+            if (dialog.ShowDialog() == DialogResult.OK)
+            {
+                IntelHex.IntelHex ih = new IntelHex.IntelHex();
+                ih.load(dialog.FileName);
+                HexView hv = new HexView();
+
+                hv.setdata(ih.rom);
+                hv.MdiParent = this;
+                hv.DockPanel = this.dockPanel;
+                hv.Show();
+
+            }     
+        }
+
 
 
         

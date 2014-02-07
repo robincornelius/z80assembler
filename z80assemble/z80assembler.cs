@@ -160,6 +160,8 @@ namespace z80assemble
 
         public Dictionary<int, byte> bytes;
         Dictionary<string, int> labels = new Dictionary<string, int>();
+        Dictionary<string, int> externlabels = new Dictionary<string, int>();
+        List<string> globals = new List<string>();
         Dictionary<string, int> defines = new Dictionary<string, int>();
         List<command> commandtable = new List<command>();
         List<string> externs = new List<string>();
@@ -258,6 +260,7 @@ namespace z80assemble
             defines = new Dictionary<string, int>();
             macros = new Dictionary<string, macro>();
             equs = new Dictionary<string, string>();
+            externlabels = new Dictionary<string, int>();
 
             ramptr = ramstart;
         }
@@ -576,9 +579,6 @@ namespace z80assemble
                 return argtype.IMMEDIATE;
             }
 
-            //if (setup == false)
-             //   Debugger.Break();
-
             return argtype.INVALID;
         }
 
@@ -834,11 +834,6 @@ namespace z80assemble
                         {
                             continue;
                         }
-                    }
-
-                    if (matchbreak)
-                    {
-                        Debugger.Break();
                     }
 
                     // if there are no args just return opcode
@@ -1329,6 +1324,44 @@ namespace z80assemble
 
         public void link()
         {
+
+            int found = 0;
+
+            foreach (string g in globals)
+            {
+                if(labels.ContainsKey(g))
+                {
+                    int address = labels[g];
+                    externlabels.Add(g, address);
+                }
+                else if (defines.ContainsKey(g))
+                {
+                    int address = defines[g];
+                    externlabels.Add(g, address);
+                }
+                else if (equs.ContainsKey(g))
+                {   
+                    int address;
+                    if (isnumber(equs[g], out address))
+                    {
+                        externlabels.Add(g, address);
+                    }
+                    else
+                    {
+                        sendmsg("Error parsing " + g+" into link address for global");
+                    }                  
+                }
+                else
+                {
+                    sendmsg("Link error unknown global " + g);
+                }
+
+                
+            }
+
+            globals.Clear();
+
+
             //TODO at the end of the file remove all non externs
             try
             {
@@ -1338,17 +1371,25 @@ namespace z80assemble
                     int address = kvp.Key;
                     linkrequiredatdata data = kvp.Value;
                     string label = data.label;
-
+                    int val;
+                   
                     if (!labels.ContainsKey(label))
                     {
-                        if(externs.Contains(label))
+                        if (externs.Contains(label))
                             continue;
 
-                        sendmsg("Link error could not find extern " + label);
-                        return;
+                        if (!externlabels.ContainsKey(label))
+                        {
+                            DoErr(this.currentfile,0,"Link error could not find extern " + label);
+                            continue;
+                        }
+                        //its an extern use it
+                        val = externlabels[label] + data.offset;
                     }
-
-                    int val = labels[label]+data.offset;
+                    else
+                    {
+                        val = labels[label] + data.offset;
+                    }
 
                     if (data.size == 16)
                     {
@@ -1379,7 +1420,7 @@ namespace z80assemble
                 }
 
                 foreach (int a in completed)
-                {
+                {                    
                     linkrequiredat.Remove(a);
                 }
 
@@ -1393,7 +1434,9 @@ namespace z80assemble
 
         public void finallink()
         {
-
+            
+            externs.Clear();
+            link();
         }
 
         public bool domath(string data, out int outv)
@@ -1509,6 +1552,7 @@ namespace z80assemble
                              else
                              {
                                  currentdatalabel = result[0].TrimEnd(':');
+                                 fixdatalabel(currentdatalabel,0);
                              }
                          }
                          else
@@ -1641,15 +1685,26 @@ namespace z80assemble
                                      break;
 
                                 case ".GLOBAL":
-                                     //pushglobal(result[2]);
+                                     if (pass == 0)
+                                     {
+                                          //cope with delimited entry
+                                         for (int p = 2; p < result.Count; p++)
+                                         {
+                                             pushglobal(result[p]);
+                                         }
+                                     }
                                      break;
 
                                 case ".EXTERN":
-                                     if (result.Count < 3)
-                                         return;
-                                     pushextern(result[2]);
+                                     if (pass == 0)
+                                     {
+                                         for (int p = 2; p < result.Count; p++)
+                                         {
+                                             pushextern(result[p]);
+                                         }
+                                        
+                                     }
                                      break;
-
                                 case ".INCLUDE":
                                      if (result.Count < 3)
                                          return;
@@ -1696,6 +1751,13 @@ namespace z80assemble
 
                  }
              }
+        }
+
+        public void pushglobal(string label)
+        {
+            //we update this at the end of each file
+           globals.Add(label);
+
         }
 
         public void handledata(List<string> line,int pass)
@@ -1796,7 +1858,7 @@ namespace z80assemble
                         }
                         else
                         {
-                            linkrequiredatdata d = new linkrequiredatdata(2, line[2], 0);
+                            linkrequiredatdata d = new linkrequiredatdata(16, line[2], 0);
                             linkrequiredat.Add(org, d);
                             org += 2;
                         }

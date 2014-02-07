@@ -68,7 +68,7 @@ namespace Z80IDE
 
             assembler_Msg(" \r\n-------- LINKING -------------\r\n ");
 
-            //assembler.finallink(); // This is the per file link
+            assembler.finallink(); // This is the per file link
 
             assembler_Msg("\r\n --------DONE -------------");
 
