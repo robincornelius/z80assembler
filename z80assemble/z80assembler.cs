@@ -193,8 +193,9 @@ namespace z80assemble
             //commandtable = new commands
             //{ "ADC A,(HL)",	7,	2,	"8E",	1};
 
-            string myExeDir = (new FileInfo(System.Reflection.Assembly.GetEntryAssembly().Location)).Directory.ToString();
+           // string myExeDir = (new FileInfo(System.Reflection.Assembly.GetEntryAssembly().Location)).Directory.ToString();
 
+            string myExeDir = "C:\\code\\z80assembler\\Tests\\bin\\Debug";
             string[] lines = System.IO.File.ReadAllLines(myExeDir + Path.DirectorySeparatorChar + "commands.txt");
 
             int invalidcount = 0;
@@ -849,12 +850,12 @@ namespace z80assemble
                         return opcode;
                     }
 
-                    if (at2 == argtype.INDIRECTREGOFFSET && at1 == argtype.IMMEDIATE)
-                    {
-                        string opcode = valueinsert(c.opcode, val2, 'o', false);
-                        opcode = valueinsert(opcode, val1, 'n', false);
-                        return opcode;
-                    }
+                   // if (at2 == argtype.INDIRECTREGOFFSET && at1 == argtype.IMMEDIATE)
+                  //  {
+                  //      string opcode = valueinsert(c.opcode, val2, 'o', false);
+                  //      opcode = valueinsert(opcode, val1, 'n', false);
+                  //      return opcode;
+                  //  }
 
                     //if there is immediate data, insert this as 8 or 16 bits and return opcode
                     if (at2 == argtype.IMMEDIATE)
@@ -878,14 +879,20 @@ namespace z80assemble
                         {
                             string opcode = c.opcode;
 
-                            if (at2 == argtype.INDIRECTOFFSET)
+                            if (at2 == argtype.INDIRECTREGOFFSET)
                             {
                                 string newstr = string.Format("{0:X2}", val2);
                                 opcode = opcode.Replace("oo", newstr);
                             }
 
-                            return  multiplyoffset(opcode, val1.ToString(),arg2); //meh
+                            return multiplyoffset(opcode, val1.ToString(), arg2); //meh
 
+                        }
+                        else if (at2 == argtype.INDIRECTREGOFFSET)
+                        {
+                            string opcode = valueinsert(c.opcode, val2, 'o', false);
+                                  opcode = valueinsert(opcode, val1, 'n', false);
+                                  return opcode;
                         }
 
                         //sub the nns for the real value;
@@ -1552,7 +1559,7 @@ namespace z80assemble
                              else
                              {
                                  currentdatalabel = result[0].TrimEnd(':');
-                                 fixdatalabel(currentdatalabel,0);
+                                 //fixdatalabel(currentdatalabel,0);
                              }
                          }
                          else
