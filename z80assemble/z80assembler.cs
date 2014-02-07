@@ -1425,7 +1425,344 @@ namespace z80assemble
             return false;
         }
 
-  
+
+        string[] validcomamnds = { "ADC", "ADD", "AND", "BIT", "CALL", "CCF", "CP", "CPD", "CPDR", "CPI", "CPIR", "CPL", "DAA", "DEC", "DI", "DJNZ", "EI", "EX", "EXX", "HALT", "IM", "IN", "INC", "IND", "INDR", "INI", "INIR", "JP", "LD", "LDD", "LDDR", "LDI", "LDIR", "MULB", "MULUW", "NEG", "NOP", "OR", "OTDR", "OUT", "OUTD", "POP", "PUSH", "RES", "RET", "RETI", "RETN", "RL", "RLA", "RLC", "RLCA", "RLD", "RR", "RRA", "RRC", "RRCA", "RRD", "RST", "SBC", "SCF", "SET", "SLA", "SRA", "SRL", "SUB", "XOR" };
+        string[] validdirectives = { };
+
+        public void newparser(string linex, int pass)
+        {
+             int pos = -1;
+             //foreach (string linex in lines)
+             {
+                 pos++;
+                 string line = linex;
+
+                 if (line.Length == 0 || line[0] == ';' || line[0] == '\r' || line[0] == '\n')
+                 {
+                     return;
+                 }
+
+                 //if we are defining a macro just store this line and continue
+                 //we will pass it when it is invoked
+                 if (macro == true)
+                 {
+                     macros[currentmacro].addline(line);
+                     return;
+                 }
+
+                 //New parser code her
+                 RegexOptions options = RegexOptions.None;
+
+                 Regex regex = new Regex(@"(?<token>^[\w$_:]*)|((?<token>[""'](.*?)(?<!\\)[""']|(?<token>[\w$_+*/.-]+))(\s)*)|(?<comment>;.*)", options);
+
+                 var result = (from Match m in regex.Matches(line)
+                               where m.Groups["token"].Success
+                               select m.Groups["token"].Value).ToList();
+
+                 var comment = (from Match m in regex.Matches(line)
+                               where m.Groups["comment"].Success
+                               select m.Groups["comment"].Value).ToList();
+
+                 //Thats more like it
+                 // [0] is always the label
+                 // [1] is the command
+                 // [2] is first arg
+                 // [3] is 2nd arg ...
+
+                 // for .db etc [0] is label [1] is command *
+
+                 //Now divide up and fire off seperate processors
+
+                 //FIX me if there is math in any of the results it needs fixing here or it will not be implement
+               
+
+                 if (result.Count >= 1)
+                 {
+                     if (result[0].Length > 0)
+                     {
+
+                         if (result[0][result[0].Length - 1] == ':')
+                         {
+                             //found label
+                             if (codesegment == true)
+                             {
+                                 if (pass == 0)
+                                 {
+                                     pushlabel(result[0].TrimEnd(':'));
+                                 }
+                                 else
+                                 {
+                                     fixlabel(result[0].TrimEnd(':'));
+                                 }
+                             }
+                             else
+                             {
+                                 currentdatalabel = result[0].TrimEnd(':');
+                             }
+                         }
+                         else
+                         {
+                             if (result.Count >= 2 && result[1].ToUpper() != "EQU")
+                             {
+                                 //Invalid grammar unknown token in lable position
+                             }
+                         }
+                     }
+                 }
+
+                 if (result.Count >= 2)
+                 {
+                    // if (result[1][0] == '.')
+                    // {
+                     //    //Preprocessor found
+                     //    handlepreprocessor(result);
+                     //}
+                     //else
+                     {
+                         string command = result[1].ToUpper();
+
+                         //if (validcomamnds.Contains(command))
+                         //{
+                            
+                    //     }
+                       //  else
+                         {
+                            switch(command)
+                            {
+                                case  "ORG":
+                                    if (pass == 0)
+                                        break;
+                                    {
+                                        int num;
+                                        if(isnumber(result[2],out num))
+                                        {
+                                            org=num;
+                                        }
+                                        else
+                                        {
+                                            //ERROR invalid ORG value
+                                        }
+                                    }
+                                    break;
+
+                                case    "PAGE":
+                                    if (pass == 0)
+                                        break;
+                                    break;
+
+                                case    "DATA":
+                                    codesegment = false;
+                                     break;
+
+                                case    "CODE":
+                                     codesegment = true;
+                                     break;
+
+                                case    "EQU":
+                                case    ".EQU":
+                                     if (pass == 0)
+                                     {
+                                         equs.Add(result[0], result[2]);
+                                     }
+                                     else
+                                     {
+                                         if (equs[result[0]] != result[2])
+                                         {
+                                             //EQU changed between passes.
+                                         }
+                                     }
+                                     break;
+
+                                case    "IF":
+                                     string criteria = result[1]; 
+                                      inifblock++;
+                                      skipping = true;
+                                      if(equs.ContainsKey(criteria))
+                                      {
+                                          skipping = false;
+                                      }
+                                      break;
+
+                                case   "ENDIF":
+                                     inifblock--;
+                                     break;
+
+                                case    "MACRO":
+
+                                     macro = true;
+                                     List<string> mbits = result;
+                                     currentmacro = mbits[0]; //label is macro name
+                                     mbits.RemoveAt(1); //remove label
+                                     mbits.RemoveAt(0); //remove MACRO                          
+                                     macros[currentmacro] = new macro();
+                                     macros[currentmacro].command = currentmacro;
+                                     macros[currentmacro].setargs(mbits);
+
+                                     break;
+
+                                case    "ENDM":
+                                     macro = false;
+                                     break;
+
+                                case    "DB":
+                                case    "DW":
+                                case    "DS":
+                                     handledata(result); //code or data handled here
+                                     break;
+
+                                case "GLOBAL":
+                                     //pushglobal(result[2]);
+                                     break;
+
+                                case "EXTERN":
+                                     pushextern(result[2]);
+                                     break;
+
+                                case ".INCLUDE":
+                                     if (pass == 1)
+                                         break;
+                                     includefile(result[2]);
+                                     break;
+
+                                default:
+                                     if (pass == 0)
+                                        return;
+                                     //Do command here
+                                     pushcommand(result[1], result[2], result[3], line);
+                                    break;
+
+                            }
+
+
+                         }
+
+                         
+                     }
+
+                 }
+             }
+        }
+
+        public void handledata(List<string> line)
+        {
+            //FIX ME not finished
+            //This is the old code copied across it does not handle the 'dfdsfdsfds' or 1,2,3,4,5 cases
+            //This data is now correctly sent in the lines[] data " or ' are left intact to identify with
+            //comma seperated data will be split
+
+            if (codesegment == false)
+            {
+                int bytes = 0;
+                if (line[1].ToUpper() == "DW")
+                    bytes = 2;
+                if (line[1].ToUpper() == "DB")
+                    bytes = 1;
+                if (line[1].ToUpper() == "DS")
+                {
+                    int size = 0;
+                    if (!int.TryParse(line[2], out size))
+                    {
+                        domath(line[2], out size);
+                    }
+
+                    bytes = size; //FIX ME DETECT HERE;
+                }
+
+                if (bytes > 0)
+                {
+                    if (currentdatalabel != "")
+                    {
+                        fixdatalabel(currentdatalabel, bytes);
+                    }
+                    return;
+                }
+
+            }
+            if (codesegment == true)
+            {
+                byte[] data;
+                switch (line[1].ToUpper())
+                {
+                    case "DB": //FIXME this can be a comma seperated list or a string etc
+                        data = new byte[1];
+                        int idata;
+                        if (isnumber(line[2], out idata))
+                        {
+                            if (idata > 255)
+                            {
+                                Exception e = new Exception("Number too big for .db");
+                                throw e;
+                            }
+
+                            data[0] = (byte)idata;
+                            pushbytes(data);
+                        }
+                        else
+                        {
+
+                            //Exception e = new Exception("Unable to parse " + value);
+                            //throw e;
+
+                        }
+
+                        break;
+                    case "DW":
+                        data = new byte[2];
+                        int val;
+                        if (isnumber(line[2], out val))
+                        {
+                            data[0] = (byte)(val & 0xFF);
+                            data[1] = (byte)(val >> 8 & 0xff);
+                            pushbytes(data);
+                        }
+                        else
+                        {
+                            linkrequiredatdata d = new linkrequiredatdata(2, line[2], 0);
+                            linkrequiredat.Add(org, d);
+                            org += 2;
+                        }
+                        break;
+                    case "DS":
+                        int size = 0;
+                        if (!int.TryParse(line[2], out size))
+                        {
+                            domath(line[2], out size);
+                        }
+
+                        org += size; //Not sure how useful this really is?
+                        break;
+
+                }
+
+            }
+
+
+        }
+
+        public void includefile(string filename)
+        {
+            //load file in value and recurse,
+            StreamReader sr;
+            try
+            {
+                sr = new StreamReader(basepath + Path.DirectorySeparatorChar + "files" + Path.DirectorySeparatorChar + filename);
+            }
+            catch (Exception e)
+            {
+                senderror(currentfile, lineno, "Failed to open include file " + filename);
+                return;
+            }
+
+            string data = sr.ReadToEnd();
+            string oldfilename = currentfile;
+            int oldlineno = lineno;
+            lineno = 0;
+            parse(data, filename);
+            currentfile = oldfilename;
+            lineno = oldlineno;
+            //pushextern(value);
+        }
+
         public void pass1(string[] lines)
         {
 
@@ -1747,7 +2084,7 @@ namespace z80assemble
                         byte[] data;
                         switch (directive.ToUpper())
                         {
-                            case "DB": //FIXME this can be a comma seperated list
+                            case "DB": //FIXME this can be a comma seperated list or a string etc
                                 data = new byte[1];
                                 int idata;
                                 if (isnumber(value, out idata))
@@ -1773,7 +2110,7 @@ namespace z80assemble
                             case "DW":
                                 data = new byte[2];
                                 int val;
-                                if (int.TryParse(value, out val))
+                                if(isnumber(value,out val))
                                 {
                                     data[0] = (byte)(val & 0xFF);
                                     data[1] = (byte)(val >> 8 & 0xff);
@@ -1787,7 +2124,13 @@ namespace z80assemble
                                 }
                                 break;
                             case "DS":
-                                //FIXME implement me
+                                int size = 0;
+                                if (!int.TryParse(value, out size))
+                                {
+                                    domath(value,out size);
+                                }
+
+                                org += size; //Not sure how useful this really is?
                                 break;
 
                         }
@@ -1882,12 +2225,43 @@ namespace z80assemble
            macro = false;
            codesegment = true;
 
-           //pass 1 just gets any equs/labels etc in current file so they are defined if used before they 
-           //are defined.
-           pass1(lines);
+           foreach (string linex in lines)
+           {
+               try
+               {
+                   newparser(linex, 0);
+               }
+               catch (Exception e)
+               {
+                   senderror(filename, lineno, e.Message);
+
+               }
+               lineno++;
+           }
 
            lineno = 0;
 
+           foreach (string linex in lines)
+           {
+               try
+               {
+                   newparser(linex, 1);
+               }
+               catch (Exception e)
+               {
+                   senderror(filename, lineno, e.Message);
+
+               }
+               lineno++;
+           }
+
+         
+           //pass 1 just gets any equs/labels etc in current file so they are defined if used before they 
+           //are defined.
+           //pass1(lines);
+
+           lineno = 0;
+/*
            foreach (string linex in lines)
            {
                try
@@ -1902,6 +2276,8 @@ namespace z80assemble
                lineno++;
                //Look at character at start of line and decide action
            }
+ */
+
         }
 
         void sendmsg(string msg)
@@ -1910,6 +2286,12 @@ namespace z80assemble
             {
                 Msg(msg);
             }
+
+        }
+
+        void handlepreprocessor(List<string> data)
+        {
+            Console.WriteLine("Preprocessor found "+data[1]);
 
         }
 
