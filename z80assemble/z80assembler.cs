@@ -190,8 +190,22 @@ namespace z80assemble
             
             //commandtable = new commands
             //{ "ADC A,(HL)",	7,	2,	"8E",	1};
+            string myExeDir = "";
 
-            string myExeDir = (new FileInfo(System.Reflection.Assembly.GetEntryAssembly().Location)).Directory.ToString();
+            if ((System.Reflection.Assembly.GetEntryAssembly() != null)
+                && (System.Reflection.Assembly.GetEntryAssembly().Location != null))
+            {
+                myExeDir = (new FileInfo(System.Reflection.Assembly.GetEntryAssembly().Location)).Directory.ToString();
+            }
+            if (!File.Exists(myExeDir + Path.DirectorySeparatorChar + "commands.txt"))
+            {
+                myExeDir = Directory.GetCurrentDirectory();
+            }
+
+            if (!File.Exists(myExeDir + Path.DirectorySeparatorChar + "commands.txt"))
+            {
+               // myExeDir = "C:\\code\\z80assembler\\Tests\\bin\\Debug";
+            }
 
             //string myExeDir = "C:\\code\\z80assembler\\Tests\\bin\\Debug";
             string[] lines = System.IO.File.ReadAllLines(myExeDir + Path.DirectorySeparatorChar + "commands.txt");
