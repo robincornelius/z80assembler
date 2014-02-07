@@ -8,8 +8,8 @@
     <ProjectGuid>{C3B58DAA-A630-4A3B-B0A1-85479F1847BD}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>z80compile</RootNamespace>
-    <AssemblyName>z80compile</AssemblyName>
+    <RootNamespace>z80assemble</RootNamespace>
+    <AssemblyName>z80assembler</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>

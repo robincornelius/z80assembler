@@ -9,8 +9,6 @@ using System.Diagnostics;
 
 namespace z80assemble
 {
-
-    
         public enum argtype
         {
             INVALID,
@@ -193,9 +191,9 @@ namespace z80assemble
             //commandtable = new commands
             //{ "ADC A,(HL)",	7,	2,	"8E",	1};
 
-           // string myExeDir = (new FileInfo(System.Reflection.Assembly.GetEntryAssembly().Location)).Directory.ToString();
+            string myExeDir = (new FileInfo(System.Reflection.Assembly.GetEntryAssembly().Location)).Directory.ToString();
 
-            string myExeDir = "C:\\code\\z80assembler\\Tests\\bin\\Debug";
+            //string myExeDir = "C:\\code\\z80assembler\\Tests\\bin\\Debug";
             string[] lines = System.IO.File.ReadAllLines(myExeDir + Path.DirectorySeparatorChar + "commands.txt");
 
             int invalidcount = 0;
@@ -1558,8 +1556,11 @@ namespace z80assemble
                              }
                              else
                              {
-                                 currentdatalabel = result[0].TrimEnd(':');
-                                 //fixdatalabel(currentdatalabel,0);
+                                 if (pass == 0)
+                                 {
+                                     currentdatalabel = result[0].TrimEnd(':');
+                                     fixdatalabel(currentdatalabel,0);
+                                 }
                              }
                          }
                          else

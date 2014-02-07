@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Diagnostics;
-using z80assemble;
 using IntelHex;
 using NUnit.Framework;
+using z80assemble;
 
 // Would love to do proper unit testing but i'm using express and non of the framework is present ;-(
 
