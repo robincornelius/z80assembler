@@ -17,7 +17,7 @@ namespace Tests
         static void Main()
         {
             Program p = new Program();
-            p.labelmath1();
+            p.definedata1();
         }
 
     }
@@ -721,6 +721,42 @@ namespace Tests
              Assert.AreEqual(00, z.bytes[2]);
              Assert.AreEqual(10, z.bytes[3]);
              Assert.AreEqual(20, z.bytes[4]);
+
+         }
+
+         [Test]
+         public void definedata1()
+         {
+
+             z80assembler z = new z80assembler();
+             z.loadcommands();
+             z.ramstart = 0x4000;
+             z.reset();
+             
+             var wasCalled = false;
+             z.DoErr += delegate(string file, int line, string description) { wasCalled = true; };
+
+
+             string lines = "test: .db 10h,20h,30h,40h\ntest1: .db 'Hello World',0";
+             z.parse(lines, "");
+             Assert.IsFalse(wasCalled);
+
+             Assert.AreEqual(0x10, z.bytes[0]);
+             Assert.AreEqual(0x20, z.bytes[1]);
+             Assert.AreEqual(0x30, z.bytes[2]);
+             Assert.AreEqual(0x40, z.bytes[3]);
+             Assert.AreEqual('H', z.bytes[4]);
+             Assert.AreEqual('e', z.bytes[5]);
+             Assert.AreEqual('l', z.bytes[6]);
+             Assert.AreEqual('l', z.bytes[7]);
+             Assert.AreEqual('o', z.bytes[8]);
+             Assert.AreEqual(' ', z.bytes[9]);
+             Assert.AreEqual('W', z.bytes[10]);
+             Assert.AreEqual('o', z.bytes[11]);
+             Assert.AreEqual('r', z.bytes[12]);
+             Assert.AreEqual('l', z.bytes[13]);
+             Assert.AreEqual('d', z.bytes[14]);
+             Assert.AreEqual(0, z.bytes[15]);
 
          }
     }
