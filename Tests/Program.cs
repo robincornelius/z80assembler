@@ -17,7 +17,7 @@ namespace Tests
         static void Main()
         {
             Program p = new Program();
-            p.ramlabels();
+            p.labelmath1();
         }
 
     }
@@ -466,9 +466,9 @@ namespace Tests
 
 
             z.parse(" LD HL,test","");
-            Assert.AreEqual(z.bytes[8] , 0x21);
-            Assert.AreEqual(z.bytes[9] , 00);
-            Assert.AreEqual(z.bytes[10] , 00);
+            Assert.AreEqual(0x21,z.bytes[8]);
+            Assert.AreEqual(00,z.bytes[9]);
+            Assert.AreEqual(00,z.bytes[10]);
             z.link();
             Assert.AreEqual(z.bytes[9] , 0x05);
             Assert.AreEqual(z.bytes[10] , 00);
@@ -504,12 +504,16 @@ namespace Tests
          [Test]
          public void ramlabels()
          {
+             //NB ramstart will only take effect on a reset()
+             //and will be reset by each call to parse
+             //so to test ramlabels you need to feed in all the data in one go
+             //as if it is read from a file
              z80assembler z = new z80assembler();
              z.loadcommands();
              z.ramstart = 0x4000;
              z.reset();
           
-             string lines = " .DATA \ntest: .db 4\ntest2: .db \n .CODE \n .ORG 0000\n ld hl,test";
+             string lines = " .DATA \ntest: .db \ntest2: .db \n .CODE \n .ORG 0000\n ld hl,test \n ld hl,(test2)";
 
              z.parse(lines, "");
              z.link();
@@ -519,7 +523,205 @@ namespace Tests
              Assert.AreEqual(0x00,z.bytes[1]);
              Assert.AreEqual(0x40,z.bytes[2]);
 
+             Assert.AreEqual(0x2A, z.bytes[3]);
+             Assert.AreEqual(0x01, z.bytes[4]);
+             Assert.AreEqual(0x40, z.bytes[5]);
 
-         } 
+         }
+
+         //fail case extern not delcared
+         [Test]
+         public void globals1()
+         {
+             z80assembler z = new z80assembler();
+             z.loadcommands();
+             z.ramstart = 0x4000;
+             z.reset();
+
+             var wasCalled = false;
+             z.DoErr += delegate(string file, int line, string description) { wasCalled = true; };
+
+             string lines = " .global test \n nop\n nop\n nop\ntest: ld hl,test \n nop\n";
+             z.parse(lines, "");
+             z.link();
+             z.partialreset();
+
+             Assert.IsFalse(wasCalled);
+
+             lines = " nop\n nop\n nop\n ld hl,(test) \n nop\n";
+             z.parse(lines, "");
+
+             z.link();
+
+             Assert.IsTrue(wasCalled); 
+         }
+
+         //fail case global not declared
+         [Test]
+         public void globals2()
+         {
+             z80assembler z = new z80assembler();
+             z.loadcommands();
+             z.ramstart = 0x4000;
+             z.reset();
+
+             var wasCalled = false;
+             z.DoErr += delegate(string file, int line, string description) { wasCalled = true; };
+
+             string lines = " nop\n nop\n nop\ntest: ld hl,test \n nop\n";
+             z.parse(lines, "");
+             z.link();
+             z.partialreset();
+
+             Assert.IsFalse(wasCalled);
+
+             lines = " .extern test \n nop\n nop\n nop\n ld hl,(test) \n nop\n";
+             z.parse(lines, "");
+
+             z.link();
+
+             Assert.IsFalse(wasCalled);
+
+             z.finallink();
+
+             Assert.IsTrue(wasCalled);
+
+         }
+
+         //correct syntax casse
+         [Test]
+         public void globals3()
+         {
+             z80assembler z = new z80assembler();
+             z.loadcommands();
+             z.ramstart = 0x4000;
+             z.reset();
+
+             var wasCalled = false;
+             z.DoErr += delegate(string file, int line, string description) { wasCalled = true; };
+
+             string lines = " .global test \n nop\n nop\n nop\ntest: ld hl,test \n nop\n";
+             z.parse(lines, "");
+             z.link();
+             z.partialreset();
+
+             Assert.IsFalse(wasCalled);
+
+             lines = " .extern test \n nop\n nop\n nop\n ld hl,(test) \n nop\n";
+             z.parse(lines, "");
+
+             z.link();
+
+             Assert.IsFalse(wasCalled);
+
+             z.finallink();
+
+             Assert.IsFalse(wasCalled);
+        }
+
+         [Test]
+         public void equs1()
+         {
+             z80assembler z = new z80assembler();
+             z.loadcommands();
+             z.ramstart = 0x4000;
+             z.reset();
+
+             var wasCalled = false;
+             z.DoErr += delegate(string file, int line, string description) { wasCalled = true; };
+
+             string lines = "meh equ 5\nmeh2 .equ 6 nop\n nop\n nop\n ld a,meh \n ld a,meh2\n";
+
+             z.parse(lines, "");
+             Assert.IsFalse(wasCalled);
+
+             //33 nn case
+
+             Assert.AreEqual(0x3e, z.bytes[0]);
+             Assert.AreEqual(0x05, z.bytes[1]);
+             Assert.AreEqual(0x3e, z.bytes[2]);
+             Assert.AreEqual(0x06, z.bytes[3]);
+             
+         }
+
+         [Test]
+         public void equsmath1()
+         {
+             z80assembler z = new z80assembler();
+             z.loadcommands();
+             z.ramstart = 0x4000;
+             z.reset();
+
+             var wasCalled = false;
+             z.DoErr += delegate(string file, int line, string description) { wasCalled = true; };
+
+             string lines = "meh equ 5\nmeh2 .equ 6 nop\n nop\n nop\n ld a,meh + 1\n ld a,meh2+1\n";
+
+             z.parse(lines, "");
+             Assert.IsFalse(wasCalled);
+
+             //33 nn case
+
+             Assert.AreEqual(0x3e, z.bytes[0]);
+             Assert.AreEqual(0x06, z.bytes[1]);
+             Assert.AreEqual(0x3e, z.bytes[2]);
+             Assert.AreEqual(0x07, z.bytes[3]);
+
+         }
+
+         [Test]
+         public void equsmath2()
+         {
+             z80assembler z = new z80assembler();
+             z.loadcommands();
+             z.ramstart = 0x4000;
+             z.reset();
+
+             var wasCalled = false;
+             z.DoErr += delegate(string file, int line, string description) { wasCalled = true; };
+
+             string lines = "meh equ 5\nmeh2 .equ 6 nop\n nop\n nop\n ld a,meh + 2 * 2\n ld a,meh2+1*2\n";
+
+             z.parse(lines, "");
+             Assert.IsFalse(wasCalled);
+
+             //33 nn case
+
+             Assert.AreEqual(0x3e, z.bytes[0]);
+             Assert.AreEqual(0x09, z.bytes[1]);
+             Assert.AreEqual(0x3e, z.bytes[2]);
+             Assert.AreEqual(0x08, z.bytes[3]);
+
+         }
+
+         [Test]
+         public void labelmath1()
+         {
+             z80assembler z = new z80assembler();
+             z.loadcommands();
+             z.ramstart = 0x4000;
+             z.reset();
+
+             var wasCalled = false;
+             z.DoErr += delegate(string file, int line, string description) { wasCalled = true; };
+
+             //string lines = "test: .db 10,20,30,40\n ld hl,(test+1) \n ";
+             string lines = " ld hl,(test+1) \ntest: .db 10,20,30,40";
+
+             z.parse(lines, "");
+             Assert.IsFalse(wasCalled);
+
+             z.link();
+             Assert.IsFalse(wasCalled);
+
+             //33 nn case
+
+             Assert.AreEqual(42, z.bytes[0]);
+             Assert.AreEqual(04, z.bytes[1]);
+             Assert.AreEqual(00, z.bytes[2]);
+             Assert.AreEqual(10, z.bytes[3]);
+             Assert.AreEqual(20, z.bytes[4]);
+
+         }
     }
 }

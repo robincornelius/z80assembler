@@ -44,6 +44,9 @@
     <Reference Include="FastColoredTextBox">
       <HintPath>..\FastColoredTextBox-master\Binary\FastColoredTextBox.dll</HintPath>
     </Reference>
+    <Reference Include="MathParser">
+      <HintPath>..\MathParser.dll</HintPath>
+    </Reference>
     <Reference Include="Ribbon">
       <HintPath>..\HexBoxWin7\bin\Ribbon.dll</HintPath>
     </Reference>
