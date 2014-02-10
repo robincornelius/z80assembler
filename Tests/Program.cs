@@ -17,7 +17,8 @@ namespace Tests
         static void Main()
         {
             Program p = new Program();
-            p.definedata1();
+            p.labels2();
+
         }
 
     }
@@ -725,6 +726,65 @@ namespace Tests
          }
 
          [Test]
+         public void labelmath2()
+         {
+             z80assembler z = new z80assembler();
+             z.loadcommands();
+             z.ramstart = 0x4000;
+             z.reset();
+
+             var wasCalled = false;
+             z.DoErr += delegate(string file, int line, string description) { wasCalled = true; };
+          
+             string lines = " .global test\n nop\n nop\ntest: .db 10,20,30";
+
+             z.parse(lines, "");
+             Assert.IsFalse(wasCalled);
+
+             z.link();
+             Assert.IsFalse(wasCalled);
+
+             lines = " .extern test\n nop\n nop\n ld a,(test+1)";
+
+             z.partialreset();
+             z.parse(lines, "");
+             Assert.IsFalse(wasCalled);
+
+             z.link();
+             Assert.IsFalse(wasCalled);
+
+             z.finallink();
+             Assert.IsFalse(wasCalled);
+
+
+         }
+
+         [Test]
+         public void labelmath3()
+         {
+             z80assembler z = new z80assembler();
+             z.loadcommands();
+             z.ramstart = 0x4000;
+             z.reset();
+
+             var wasCalled = false;
+             z.DoErr += delegate(string file, int line, string description) { wasCalled = true; };
+
+             string lines = "CHLEVS:         .ds     5\n ld DE,CHLEVS+1";
+             z.parse(lines, "");
+             Assert.IsFalse(wasCalled);
+
+             z.link();
+             Assert.IsFalse(wasCalled);
+
+             z.finallink();
+             Assert.IsFalse(wasCalled);
+         }
+
+        
+
+
+         [Test]
          public void definedata1()
          {
 
@@ -757,6 +817,27 @@ namespace Tests
              Assert.AreEqual('l', z.bytes[13]);
              Assert.AreEqual('d', z.bytes[14]);
              Assert.AreEqual(0, z.bytes[15]);
+
+         }
+
+         [Test]
+         public void labels2()
+         {
+             z80assembler z = new z80assembler();
+             z.loadcommands();
+             z.ramstart = 0x4000;
+             z.reset();
+
+             var wasCalled = false;
+             z.DoErr += delegate(string file, int line, string description) { wasCalled = true; };
+
+
+             string lines = "test: .db 10h,20h,30h,40h\n ld ix,test";
+             z.parse(lines, "");
+             Assert.IsFalse(wasCalled);
+
+             z.link();
+             Assert.IsFalse(wasCalled);
 
          }
     }

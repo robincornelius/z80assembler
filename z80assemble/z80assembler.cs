@@ -226,6 +226,13 @@ namespace z80assemble
                     bool arg1defer = false;
                     bool arg2defer = false;
 
+                    if (arg1 == "IXh" || arg1 == "IXl" || arg1 == "IYh" || arg1 == "IYl" || arg1 == "IXp" || arg1 == "IYp" || arg1 == "IXq" || arg1 == "IYq")
+                        continue;
+
+                    if (arg2 == "IXh" || arg2 == "IXl" || arg2 == "IYh" || arg2 == "IYl" || arg2 == "IXp" || arg2 == "IYp" || arg2 == "IXq" || arg2 == "IYq")
+                        continue;
+
+
                     argtype at1 = validatearg(arg1, out outval, out argm1, out arg1defer, true);
                     argtype at2 = validatearg(arg2, out outval, out argm2, out arg2defer, true);
 
@@ -386,7 +393,7 @@ namespace z80assemble
 
                 if (!regok(bits[0]))
                 {
-                    string[] xbits = xarg.Split(new char[] { '+' });
+                    string[] xbits = xarg.Split( '+');
 
                     xbits[0] = xbits[0].Trim();
                     xbits[1] = xbits[1].Trim();
@@ -586,6 +593,20 @@ namespace z80assemble
             if (domath(xarg, out imvalue))
             {
                 return argtype.IMMEDIATE;
+            }
+
+            if (domathwithlabels(xarg, out imvalue))
+            {
+                string[] xbits = xarg.Split('+','*','/','-');
+
+                xbits[0] = xbits[0].Trim(); //meh bad assumption
+               
+                arg2 = xbits[0];
+
+                if (indirect)
+                    return argtype.INDIRECTLABEL;
+                else
+                    return argtype.LABEL;
             }
 
             return argtype.INVALID;
@@ -1204,7 +1225,7 @@ namespace z80assemble
         public string generateplaceholder(string label, string opstring)
         {
             //Determine how many opbytes are before the nn nn
-            Match match = Regex.Match(opstring, @"^([A-Z0-9]*) nn nn$");
+            Match match = Regex.Match(opstring, @"^([A-Z0-9 ]*) nn nn$");
             if (match.Success)
             {
                 //fix me wrong length?
@@ -1459,7 +1480,7 @@ namespace z80assemble
         {
             MathParser parser = new MathParser();
             outv = 0;
-
+            
             foreach(KeyValuePair<string,string>kvp in equs)
             {
 
@@ -1480,6 +1501,32 @@ namespace z80assemble
                 return false;
             }
            
+            return true;
+        }
+
+        public bool domathwithlabels(string data, out int outv)
+        {
+            MathParser parser = new MathParser();
+            outv = 0;
+
+            foreach (KeyValuePair<string, int> kvp in labels)
+            {
+
+                int v;
+                parser.LocalVariables.Add(kvp.Key, kvp.Value);
+            }
+
+            try
+            {
+                //we only have ints in z80 so cast it to an int
+                outv = (int)parser.ProgrammaticallyParse(data);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Math error");
+                return false;
+            }
+
             return true;
         }
 
